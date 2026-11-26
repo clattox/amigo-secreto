@@ -530,6 +530,42 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
       </div>
     </div>
 
+    <!-- Cambio de PIN obligatorio -->
+    <div class="card" id="card-change-pin" style="display:none">
+      <div class="card-head">
+        <h2>🔒 Crea tu PIN personal</h2>
+        <p>El organizador te asignó un PIN temporal. Por tu privacidad, debes crear uno propio antes de ver tu amigo secreto.</p>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom:12px;text-align:center;color:#555;font-size:.85rem">Nuevo PIN (4 dígitos):</div>
+        <div class="pin-display" id="new-pin-display">
+          <div class="pin-dot" id="ndot-0">•</div>
+          <div class="pin-dot" id="ndot-1">•</div>
+          <div class="pin-dot" id="ndot-2">•</div>
+          <div class="pin-dot" id="ndot-3">•</div>
+        </div>
+        <div class="keypad">
+          <button class="key" onclick="newPinKey('1')">1</button>
+          <button class="key" onclick="newPinKey('2')">2</button>
+          <button class="key" onclick="newPinKey('3')">3</button>
+          <button class="key" onclick="newPinKey('4')">4</button>
+          <button class="key" onclick="newPinKey('5')">5</button>
+          <button class="key" onclick="newPinKey('6')">6</button>
+          <button class="key" onclick="newPinKey('7')">7</button>
+          <button class="key" onclick="newPinKey('8')">8</button>
+          <button class="key" onclick="newPinKey('9')">9</button>
+          <button class="key key-empty"></button>
+          <button class="key" onclick="newPinKey('0')">0</button>
+          <button class="key key-del" onclick="newPinDel()">⌫</button>
+        </div>
+        <button class="btn btn-primary mt-2" onclick="confirmNewPin()" style="max-width:240px;width:100%;margin:0 auto;display:block">Confirmar PIN →</button>
+        <div id="change-pin-error" class="alert alert-err mt-2" style="display:none"></div>
+        <div style="margin-top:16px;padding:12px;background:#fff8e1;border-radius:8px;font-size:.8rem;color:#8a6914">
+          ⚠️ Recuerda este PIN. Lo necesitarás si quieres volver a ver tu amigo secreto.
+        </div>
+      </div>
+    </div>
+
     <!-- Reveal -->
     <div class="card" id="card-reveal" style="display:none">
       <div class="card-body text-center" style="padding:32px 24px">
@@ -1154,6 +1190,11 @@ async function verifyPin() {
     }
 
     // ¡PIN correcto!
+    if (data.needs_pin_change) {
+      // Mostrar pantalla de cambio de PIN obligatorio
+      showChangePinScreen();
+      return;
+    }
     showReveal(data.assigneeName);
 
   } catch (e) {
@@ -1163,6 +1204,82 @@ async function verifyPin() {
     renderPinDots();
   } finally {
     document.querySelectorAll('.keypad .key').forEach(k => k.disabled = false);
+  }
+}
+
+// ── Cambio de PIN ────────────────────────────────────────
+let newPinBuffer = '';
+let originalPinForChange = ''; // PIN actual para enviarlo al change-pin
+
+function showChangePinScreen() {
+  originalPinForChange = pinBuffer; // guardar el PIN actual antes de limpiar
+  document.getElementById('card-pin-input').style.display = 'none';
+  document.getElementById('card-change-pin').style.display = 'block';
+  newPinBuffer = '';
+  renderNewPinDots();
+}
+
+function renderNewPinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById(`ndot-${i}`);
+    dot.textContent = i < newPinBuffer.length ? '●' : '•';
+    dot.style.color = i < newPinBuffer.length ? '#4f46e5' : '#ccc';
+  }
+}
+
+function newPinKey(d) {
+  if (newPinBuffer.length >= 4) return;
+  newPinBuffer += d;
+  renderNewPinDots();
+}
+
+function newPinDel() {
+  newPinBuffer = newPinBuffer.slice(0, -1);
+  renderNewPinDots();
+}
+
+async function confirmNewPin() {
+  const errEl = document.getElementById('change-pin-error');
+  errEl.style.display = 'none';
+
+  if (newPinBuffer.length !== 4) {
+    errEl.textContent = 'Ingresa 4 dígitos para tu nuevo PIN';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (newPinBuffer === originalPinForChange) {
+    errEl.textContent = 'El nuevo PIN debe ser diferente al actual';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${EDGE_BASE}/change-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({
+        eventCode: currentEventCode,
+        participantId: selectedParticipant.id,
+        currentPin: originalPinForChange,
+        newPin: newPinBuffer,
+      }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      errEl.textContent = data.error || 'Error al cambiar el PIN';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // ¡PIN cambiado! Mostrar el amigo secreto
+    document.getElementById('card-change-pin').style.display = 'none';
+    showReveal(data.assigneeName);
+
+  } catch (e) {
+    errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+    errEl.style.display = 'block';
   }
 }
 
@@ -1307,19 +1424,78 @@ function showAdminPanel() {
 }
 
 async function loadAdminParticipants() {
-  const { data: participants } = await sb
-    .from('public_participants')
-    .select('id, name')
-    .eq('event_id', adminEventId)
-    .order('name');
+  const res = await fetch(`${EDGE_BASE}/verify-admin-pin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({
+      action: 'list_participants',
+      eventCode: currentEventCode,
+      adminPin: adminVerifiedPin,
+    }),
+  });
+  const result = await res.json();
+  const participants = result.participants || [];
 
   const list = document.getElementById('admin-participants-list');
-  list.innerHTML = participants.map((p, i) => `
-    <div style="display:flex;align-items:center;gap:10px;background:#f9fafb;
-      border:1.5px solid #eee;border-radius:10px;padding:10px 14px">
+  if (!participants || participants.length === 0) {
+    list.innerHTML = '<p style="color:#999;text-align:center">Sin participantes</p>';
+    return;
+  }
+  list.innerHTML = participants.map((p, i) => {
+    const pinBadge = p.pin_changed
+      ? '<span style="font-size:.7rem;background:#d1fae5;color:#065f46;padding:2px 7px;border-radius:999px">PIN personalizado</span>'
+      : '<span style="font-size:.7rem;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:999px">PIN temporal</span>';
+    const revealedBadge = p.revealed
+      ? '<span style="font-size:.7rem;background:#ede9fe;color:#4c1d95;padding:2px 7px;border-radius:999px">Vio su amigo</span>'
+      : '';
+    return `
+    <div style="display:flex;align-items:center;gap:8px;background:#f9fafb;
+      border:1.5px solid #eee;border-radius:10px;padding:10px 14px;flex-wrap:wrap">
       <span style="color:#ccc;font-size:.82rem;min-width:20px">${i+1}.</span>
-      <span style="font-weight:600;font-size:.95rem">${p.name}</span>
-    </div>`).join('');
+      <span style="font-weight:600;font-size:.95rem;flex:1">${p.name}</span>
+      ${pinBadge}${revealedBadge ? ' ' + revealedBadge : ''}
+      <button onclick="resetParticipantPin('${p.id}','${p.name.replace(/'/g,"\\'")}',this)"
+        style="font-size:.72rem;padding:4px 10px;border:1.5px solid #e5e7eb;border-radius:8px;
+        background:#fff;cursor:pointer;color:#6b7280;white-space:nowrap">
+        🔑 Resetear PIN
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function resetParticipantPin(participantId, participantName, btn) {
+  if (!confirm(`¿Resetear el PIN de ${participantName}? Se generará uno nuevo y deberán crear uno personal la próxima vez que ingresen.`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳';
+
+  try {
+    const res = await fetch(`${EDGE_BASE}/verify-admin-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({
+        action: 'reset_participant_pin',
+        eventCode: currentEventCode,
+        adminPin: adminVerifiedPin,
+        participantId,
+      }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert('Error: ' + (data.error || 'No se pudo resetear'));
+      btn.disabled = false;
+      btn.textContent = '🔑 Resetear PIN';
+      return;
+    }
+
+    alert(`Nuevo PIN de ${participantName}: ${data.newPin}\n\nEnvíaselo por privado.`);
+    loadAdminParticipants(); // recargar lista
+  } catch (e) {
+    alert('Error de conexión');
+    btn.disabled = false;
+    btn.textContent = '🔑 Resetear PIN';
+  }
 }
 
 function confirmDraw() {

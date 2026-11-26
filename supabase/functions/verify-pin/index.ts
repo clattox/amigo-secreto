@@ -35,7 +35,7 @@ Deno.serve(async (req: Request) => {
     // ── Obtener participante con su evento ──────────────
     const { data: participant, error: partErr } = await supabase
       .from("participants")
-      .select("id, event_id, name, pin_hash, pin_salt, assignment_encrypted, assignment_iv, assignment_salt")
+      .select("id, event_id, name, pin_hash, pin_salt, assignment_encrypted, assignment_iv, assignment_salt, pin_changed, revealed")
       .eq("id", participantId)
       .maybeSingle();
 
@@ -129,6 +129,22 @@ Deno.serve(async (req: Request) => {
     );
 
     const assigneeName = new TextDecoder().decode(decrypted);
+
+    // ── Si el PIN nunca fue cambiado, pedir cambio antes de revelar ─
+    if (!participant.pin_changed) {
+      return new Response(
+        JSON.stringify({ ok: true, needs_pin_change: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── Marcar como revelado ────────────────────────────
+    if (!participant.revealed) {
+      await supabase
+        .from("participants")
+        .update({ revealed: true })
+        .eq("id", participant.id);
+    }
 
     // ── Respuesta: solo el nombre, nada más ─────────────
     return new Response(

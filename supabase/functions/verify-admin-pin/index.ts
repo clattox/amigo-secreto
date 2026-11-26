@@ -4,6 +4,8 @@ import {
   pbkdf2Hash,
   sha256,
   corsHeaders,
+  generatePin,
+  generateSalt,
 } from '../_shared/crypto.ts'
 
 serve(async (req) => {
@@ -12,7 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { eventCode, adminPin } = await req.json()
+    const body = await req.json()
+    const { eventCode, adminPin, action } = body
 
     // Validación básica
     if (!eventCode || !adminPin) {
@@ -26,6 +29,84 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ ok: false, error: 'El PIN debe ser de 4 dígitos' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Acciones autenticadas (verifican admin PIN internamente)
+    if (action === 'list_participants' || action === 'reset_participant_pin') {
+      const { participantId } = body
+      if (!participantId) return new Response(
+        JSON.stringify({ ok: false, error: 'Falta participantId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      )
+
+      // Verificar que el evento existe y el admin PIN es correcto
+      const { data: event } = await supabase
+        .from('events')
+        .select('id, admin_pin_hash, admin_pin_salt')
+        .eq('code', eventCode.toUpperCase())
+        .maybeSingle()
+
+      if (!event) return new Response(
+        JSON.stringify({ ok: false, error: 'Evento no encontrado' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+      const pinHash = await pbkdf2Hash(adminPin, event.admin_pin_salt, 200_000)
+      if (pinHash !== event.admin_pin_hash) return new Response(
+        JSON.stringify({ ok: false, error: 'PIN admin incorrecto' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+      // ── list_participants ──────────────────────────────
+      if (action === 'list_participants') {
+        const { data: participants, error: listErr } = await supabase
+          .from('participants')
+          .select('id, name, pin_changed, revealed')
+          .eq('event_id', event.id)
+          .order('name')
+
+        if (listErr) throw listErr
+
+        return new Response(
+          JSON.stringify({ ok: true, participants }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // ── reset_participant_pin ──────────────────────────
+      const { participantId } = body
+      if (!participantId) return new Response(
+        JSON.stringify({ ok: false, error: 'Falta participantId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+      // Generar nuevo PIN y hashearlo
+      const newPin = generatePin()
+      const newSalt = generateSalt()
+      const newHash = await pbkdf2Hash(newPin, newSalt, 200_000)
+
+      const { error: updateErr } = await supabase
+        .from('participants')
+        .update({
+          pin_hash: newHash,
+          pin_salt: newSalt,
+          pin_changed: false,
+          revealed: false,
+        })
+        .eq('id', participantId)
+        .eq('event_id', event.id)
+
+      if (updateErr) throw updateErr
+
+      return new Response(
+        JSON.stringify({ ok: true, newPin }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
