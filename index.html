@@ -670,6 +670,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
             <p>Acceso restringido</p>
           </div>
           <input class="ca-input" type="password" id="ca-pass" placeholder="Contraseña"
+            autocomplete="new-password"
             onkeydown="if(event.key==='Enter')caCheckPass()">
           <button class="btn btn-primary" style="width:100%" onclick="caCheckPass()">Continuar →</button>
           <div id="ca-pass-err" class="alert alert-err mt-2" style="display:none">Contraseña incorrecta</div>
