@@ -1,147 +1,184 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from "npm:@supabase/supabase-js@2";
 import {
+  corsHeaders,
+  generateSalt,
   pbkdf2Hash,
   sha256,
-  generateSalt,
   deriveAesKey,
   aesEncrypt,
   generateDerangement,
-  corsHeaders,
-} from '../_shared/crypto.ts'
+} from "../_shared/crypto.ts";
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { eventCode, adminPin } = await req.json()
+    // ── Rate limiting: obtener IP hasheada ──────────────
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+      req.headers.get("x-real-ip") ??
+      "unknown";
+    const ipHash = await sha256(ip);
+
+    const { eventCode, adminPin } = await req.json();
 
     if (!eventCode || !adminPin) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Faltan datos requeridos' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return err(400, "Faltan datos");
     }
-
-    if (!/^\d{4}$/.test(adminPin)) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'PIN inválido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const clientIp =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      req.headers.get('x-real-ip') ?? 'unknown'
-    const ipHash = await sha256(clientIp)
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('id, code, drawn, admin_pin_hash, admin_pin_salt')
-      .eq('code', eventCode.toUpperCase())
-      .maybeSingle()
+    // ── Obtener evento ──────────────────────────────────
+    const { data: event, error: eventErr } = await supabase
+      .from("events")
+      .select("id, drawn, admin_pin_hash, admin_pin_salt")
+      .eq("code", eventCode.toUpperCase())
+      .maybeSingle();
 
-    if (eventError || !event) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Evento no encontrado' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (eventErr || !event) {
+      return err(404, "Evento no encontrado");
     }
 
-    if (event.drawn) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'El sorteo ya fue realizado' }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Rate limiting
-    const { data: rateCheck } = await supabase.rpc('check_and_record_attempt', {
+    // ── Rate limiting server-side ───────────────────────
+    const { data: allowed } = await supabase.rpc("check_and_record_attempt", {
       p_event_id: event.id,
-      p_participant_id: null,
+      p_participant_id: null, // null = admin
       p_ip_hash: ipHash,
       p_max_attempts: 5,
       p_block_minutes: 15,
-    })
+    });
 
-    if (!rateCheck?.allowed && rateCheck !== true) {
-      const mins = Math.ceil((rateCheck?.retry_after_seconds ?? 900) / 60)
-      return new Response(
-        JSON.stringify({ ok: false, error: `Demasiados intentos. Espera ${mins} minutos.` }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (!allowed) {
+      return err(429, "Demasiados intentos fallidos. Espérate 15 minutos y vuelve a intentar.");
     }
 
-    // Verificar PIN
-    const pinHash = await pbkdf2Hash(adminPin, event.admin_pin_salt, 200_000)
-    if (pinHash !== event.admin_pin_hash) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'PIN incorrecto' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // ── Verificar PIN admin ─────────────────────────────
+    const computedHash = await pbkdf2Hash(adminPin, event.admin_pin_salt, 200_000);
+    if (computedHash !== event.admin_pin_hash) {
+      return err(401, "PIN incorrecto");
     }
 
-    await supabase.rpc('reset_attempts', {
+    // PIN correcto → resetear intentos
+    await supabase.rpc("reset_attempts", {
       p_event_id: event.id,
       p_participant_id: null,
       p_ip_hash: ipHash,
-    })
+    });
 
-    // Locking pesimista
-    const { data: lockOk } = await supabase.rpc('lock_event_for_draw', { p_event_id: event.id })
-    if (!lockOk) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'El sorteo ya fue realizado' }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // ── Verificar que no se haya sorteado (con bloqueo) ─
+    const { data: canDraw } = await supabase.rpc("lock_event_for_draw", {
+      p_event_id: event.id,
+    });
+
+    if (!canDraw) {
+      return err(409, "El sorteo ya se realizó. No se puede volver a sortear.");
     }
 
-    // Obtener participantes
-    const { data: participants, error: partError } = await supabase
-      .from('participants')
-      .select('id, name')
-      .eq('event_id', event.id)
-      .order('created_at')
+    // ── Obtener participantes ───────────────────────────
+    const { data: participants, error: partErr } = await supabase
+      .from("participants")
+      .select("id, name, pin_salt")
+      .eq("event_id", event.id)
+      .order("created_at");
 
-    if (partError || !participants || participants.length < 3) {
-      throw new Error('No hay suficientes participantes')
+    if (partErr || !participants || participants.length < 3) {
+      return err(400, "Se necesitan al menos 3 participantes para sortear");
     }
 
-    const hmacSecret = Deno.env.get('ASSIGNMENT_HMAC_SECRET')!
-    const derangement = generateDerangement(participants.length)
+    // ── Generar derangement (sorteo sin auto-asignación) ─
+    const derangement = generateDerangement(participants.length);
+    // derangement[i] = índice del amigo secreto de participants[i]
 
-    for (let i = 0; i < participants.length; i++) {
-      const participant = participants[i]
-      const assignee = participants[derangement[i]]
-      const salt = generateSalt()
-      const key = await deriveAesKey(participant.id, salt, hmacSecret)
-      const { encrypted, iv } = await aesEncrypt(assignee.name, key)
+    const serverSecret = Deno.env.get("ASSIGNMENT_HMAC_SECRET");
+    if (!serverSecret) throw new Error("Falta ASSIGNMENT_HMAC_SECRET en env");
 
-      await supabase.from('participants').update({
-        assignment_encrypted: encrypted,
-        assignment_iv: iv,
-        assignment_salt: salt,
-      }).eq('id', participant.id)
+    // ── Cifrar asignaciones ─────────────────────────────
+    // Clave = PBKDF2(PIN_participante + "|" + serverSecret, assignment_salt)
+    // Como NO tenemos el PIN en texto claro, usamos el pin_salt del participante
+    // para generar un assignment_salt único, y derivamos la clave con:
+    // - La verificación del PIN ocurre en verify-pin
+    // - El descifrado también ocurre en verify-pin (en servidor)
+    // Por lo tanto aquí usamos una clave temporal derivada del serverSecret + participant_id
+    // que luego en verify-pin se recalcula igual.
+    const updates = await Promise.all(
+      participants.map(async (participant, i) => {
+        const assignee = participants[derangement[i]];
+        const assignmentSalt = generateSalt();
+
+        // Clave derivada de: participant_id + serverSecret + assignment_salt
+        // Esto permite que verify-pin recalcule la misma clave sin el PIN,
+        // ya que la verificación del PIN ocurre primero en verify-pin.
+        // La clave NO depende del PIN — el PIN es solo el candado de acceso a verify-pin.
+        // El cifrado real está protegido por: rate limiting + verificación PIN + serverSecret.
+        const keyMaterial = participant.id + "|" + serverSecret;
+        const enc = new TextEncoder();
+        const keyBase = await crypto.subtle.importKey(
+          "raw",
+          enc.encode(keyMaterial),
+          "PBKDF2",
+          false,
+          ["deriveKey"]
+        );
+        const aesKey = await crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            hash: "SHA-256",
+            salt: new TextEncoder().encode(assignmentSalt),
+            iterations: 150_000,
+          },
+          keyBase,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["encrypt", "decrypt"]
+        );
+
+        const { encrypted, iv } = await aesEncrypt(assignee.name, aesKey);
+
+        return {
+          id: participant.id,
+          assignment_encrypted: encrypted,
+          assignment_iv: iv,
+          assignment_salt: assignmentSalt,
+        };
+      })
+    );
+
+    // ── Guardar asignaciones cifradas ───────────────────
+    for (const update of updates) {
+      await supabase
+        .from("participants")
+        .update({
+          assignment_encrypted: update.assignment_encrypted,
+          assignment_iv: update.assignment_iv,
+          assignment_salt: update.assignment_salt,
+        })
+        .eq("id", update.id);
     }
 
-    await supabase.from('events').update({ drawn: true }).eq('id', event.id)
+    // ── Marcar evento como sorteado ─────────────────────
+    await supabase
+      .from("events")
+      .update({ drawn: true })
+      .eq("id", event.id);
 
     return new Response(
-      JSON.stringify({ ok: true }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (err) {
-    console.error('draw error:', err)
-    return new Response(
-      JSON.stringify({ ok: false, error: 'Error interno del servidor' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      JSON.stringify({ ok: true, message: "¡Sorteo realizado! 🎁" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (e) {
+    console.error("[draw]", e);
+    return err(500, "Algo salió mal en el sorteo. Intenta de nuevo.");
   }
-})
+});
+
+function err(status: number, message: string) {
+  return new Response(JSON.stringify({ ok: false, error: message }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}

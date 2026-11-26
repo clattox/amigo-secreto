@@ -3,617 +3,1283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amigo Secreto · Navidad 2026</title>
+<title>Amigo Secreto · ClauNet</title>
+<meta name="description" content="Organiza tu Amigo Secreto de forma fácil y segura. Gratis, sin cuentas, sin complicaciones.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <style>
+/* ── RESET Y VARIABLES ─────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --bg-dark:#0a1f0f;
-  --bg-mid:#0f2d16;
+  --bg:#08180a;
+  --bg2:#0d2410;
   --gold:#D4AF37;
-  --gold-light:#F0D060;
+  --gold2:#F0D060;
   --red:#C0392B;
-  --red-light:#E74C3C;
-  --green:#1a5c2a;
-  --green-light:#2ecc71;
+  --green:#1e6b30;
+  --green2:#2ecc71;
   --cream:#FDF6E3;
-  --text:#1a1a1a;
-  --text-soft:#4a4a4a;
-  --card-bg:rgba(255,255,255,0.97);
-  --r:20px;
+  --white:rgba(255,255,255,0.95);
+  --card:rgba(255,255,255,0.97);
+  --r:18px;
+  --shadow:0 20px 60px rgba(0,0,0,0.5);
+  --font:'Nunito',sans-serif;
 }
+html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:var(--cream);overflow-x:hidden}
 
-html,body{
-  min-height:100vh;
-  font-family:'Nunito',sans-serif;
-  background:var(--bg-dark);
-  color:var(--cream);
-  overflow-x:hidden;
-}
+/* ── FONDO NAVIDEÑO ────────────────────────────────── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 15% 0%,#153a1a 0%,#08180a 55%,#040d05 100%)}
+#bg::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 85% 15%,rgba(212,175,55,.07) 0%,transparent 45%),
+             radial-gradient(circle at 5% 85%,rgba(192,57,43,.05) 0%,transparent 45%)}
 
-/* ── FONDO ── */
-.bg-scene{
-  position:fixed;inset:0;z-index:0;
-  background:radial-gradient(ellipse at 20% 0%, #1a3d1f 0%, #0a1f0f 50%, #060f08 100%);
-  overflow:hidden;
-}
-.bg-scene::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle at 80% 20%, rgba(212,175,55,.08) 0%, transparent 50%),
-    radial-gradient(circle at 10% 80%, rgba(192,57,43,.06) 0%, transparent 50%);
-}
-.stars{position:absolute;inset:0;pointer-events:none}
-.star{
-  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
-  animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);
-  opacity:0;
-}
-@keyframes twinkle{0%,100%{opacity:0;transform:scale(1)}50%{opacity:var(--op,.8);transform:scale(1.5)}}
+/* Estrellas */
+#stars{position:absolute;inset:0}
+.star{position:absolute;border-radius:50%;background:#fff;
+  animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);opacity:0}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(1)}50%{opacity:var(--op,.7);transform:scale(1.4)}}
 
-/* Copos de nieve */
-.snow-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.flake{
-  position:absolute;top:-20px;color:rgba(255,255,255,0.6);font-size:var(--sz,14px);
-  animation:fall var(--dur,8s) linear infinite var(--del,0s);
-  left:var(--left,50%);
-}
-@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:.5}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
+/* Copos */
+#snow{position:absolute;inset:0;overflow:hidden}
+.flake{position:absolute;top:-20px;color:rgba(255,255,255,0.55);font-size:var(--sz,14px);
+  animation:fall var(--dur,9s) linear infinite var(--del,0s);left:var(--x,50%)}
+@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:0}
+  10%{opacity:1}90%{opacity:.4}100%{transform:translateY(110vh) rotate(400deg);opacity:0}}
 
-/* Luces navideñas top */
-.lights{
-  position:fixed;top:0;left:0;right:0;z-index:10;
-  display:flex;justify-content:space-around;padding:0 8px;
-  pointer-events:none;
-}
-.light-wire{
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:rgba(255,255,255,.15);
-}
-.bulb{
-  width:10px;height:14px;border-radius:0 0 5px 5px;
-  margin-top:2px;position:relative;
-  animation:glow var(--gd,2s) ease-in-out infinite var(--go,0s);
-}
-.bulb::before{content:'';position:absolute;top:-3px;left:3px;width:4px;height:3px;background:rgba(255,255,255,.4);border-radius:2px 2px 0 0}
-@keyframes glow{0%,100%{opacity:.4;filter:brightness(1)}50%{opacity:1;filter:brightness(1.6)}}
-.bulb.r{background:#e74c3c;box-shadow:0 0 8px #e74c3c}
-.bulb.g{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
-.bulb.y{background:#f1c40f;box-shadow:0 0 8px #f1c40f}
-.bulb.b{background:#3498db;box-shadow:0 0 8px #3498db}
+/* Luces */
+#lights{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;
+  justify-content:space-between;padding:0 4px;pointer-events:none}
+.wire{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,.12)}
+.bulb{width:9px;height:13px;border-radius:0 0 5px 5px;margin-top:2px;
+  animation:glow var(--gd,2s) ease-in-out infinite var(--go,0s)}
+@keyframes glow{0%,100%{opacity:.3;filter:blur(1px)}50%{opacity:1;filter:blur(0) brightness(1.4)}}
 
-/* ── VISTAS ── */
-.view{display:none;position:relative;z-index:1;min-height:100vh;padding:60px 16px 40px;align-items:center;justify-content:center;flex-direction:column}
-.view.active{display:flex}
+/* ── LAYOUT ────────────────────────────────────────── */
+#app{position:relative;z-index:10;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center}
 
-/* ── CARD BASE ── */
-.card{
-  background:var(--card-bg);color:var(--text);
-  border-radius:var(--r);padding:32px 28px;
-  width:100%;max-width:380px;
-  box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 0 1px rgba(212,175,55,.2);
-  position:relative;overflow:hidden;
-}
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,var(--red),var(--gold),var(--green-light),var(--gold),var(--red));
-}
+.page{display:none;width:100%;max-width:520px;padding:20px 16px 48px;
+  flex-direction:column;align-items:center;gap:24px}
+.page.active{display:flex}
 
-/* ── BIENVENIDA ── */
-.welcome-icon{font-size:4rem;text-align:center;margin-bottom:12px;animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.welcome-title{font-size:1.6rem;font-weight:900;text-align:center;color:var(--text);line-height:1.2;margin-bottom:6px}
-.welcome-sub{font-size:.88rem;color:var(--text-soft);text-align:center;margin-bottom:4px}
-.gold-line{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px 0}
-.info-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:.85rem;color:var(--text-soft);border-bottom:1px solid rgba(0,0,0,.06)}
-.info-row:last-child{border-bottom:none}
-.info-icon{font-size:1.1rem;width:28px;text-align:center;flex-shrink:0}
-.info-val{font-weight:700;color:var(--text)}
-.participants-wrap{margin:14px 0;padding:12px;background:#f8f9fa;border-radius:12px}
-.participants-title{font-size:.72rem;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.participants-grid{display:flex;flex-wrap:wrap;gap:6px}
-.participant-chip{background:#fff;border:1.5px solid rgba(0,0,0,.1);border-radius:20px;padding:4px 12px;font-size:.8rem;font-weight:700;color:var(--text)}
+/* ── HEADER ────────────────────────────────────────── */
+.site-header{text-align:center;padding:28px 0 4px}
+.site-logo{font-size:3rem;line-height:1;margin-bottom:8px;
+  animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.site-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:800;
+  color:var(--gold2);text-shadow:0 0 30px rgba(212,175,55,.5);line-height:1.1}
+.site-sub{font-size:.95rem;color:rgba(255,255,255,.55);margin-top:6px}
 
-/* ── BOTÓN PRINCIPAL ── */
-.btn-main{
-  width:100%;padding:17px;border:none;border-radius:14px;
-  background:linear-gradient(135deg,#c0392b,#922b21);
-  color:#fff;font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;
-  cursor:pointer;margin-top:20px;
-  box-shadow:0 6px 20px rgba(192,57,43,.4);
-  transition:transform .15s,box-shadow .15s;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-}
-.btn-main:active{transform:scale(.97);box-shadow:0 3px 10px rgba(192,57,43,.3)}
-.btn-main.gold{
-  background:linear-gradient(135deg,#c9a227,#9a7a0f);
-  box-shadow:0 6px 20px rgba(201,162,39,.4);
-}
-.btn-main.green{
-  background:linear-gradient(135deg,#1a5c2a,#0f3a19);
-  box-shadow:0 6px 20px rgba(26,92,42,.4);
-}
-.btn-sec{background:none;border:none;color:var(--text-soft);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;margin-top:12px;text-decoration:underline;width:100%;text-align:center}
+/* ── CARD ──────────────────────────────────────────── */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
+  width:100%;color:#1a1a1a;overflow:hidden}
+.card-head{background:linear-gradient(135deg,var(--green),#0a3d14);
+  padding:20px 24px;color:#fff}
+.card-head h2{font-size:1.2rem;font-weight:800;margin:0}
+.card-head p{font-size:.85rem;opacity:.75;margin-top:3px}
+.card-body{padding:24px}
 
-/* ── SELECTOR DE NOMBRE ── */
-.select-label{font-size:.75rem;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:block}
-.name-grid{display:flex;flex-direction:column;gap:8px;margin:12px 0}
-.name-btn{
-  width:100%;padding:13px 16px;border:2px solid rgba(0,0,0,.1);border-radius:12px;
-  background:#fff;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;
-  cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;
-  transition:border-color .15s,background .15s;color:var(--text);
-}
-.name-btn:hover{border-color:var(--red);background:#fff5f5}
-.name-btn.selected{border-color:var(--red);background:#fff5f5}
-.name-btn .nb-icon{font-size:1.2rem;width:28px;text-align:center}
-.name-btn .nb-check{margin-left:auto;color:var(--green-light);font-size:1rem;display:none}
-.name-btn.seen .nb-check{display:block}
-.name-btn.seen{opacity:.7}
+/* ── FORMS ──────────────────────────────────────────── */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:.82rem;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{
+  border:2px solid #e0e0e0;border-radius:10px;padding:12px 14px;
+  font-family:var(--font);font-size:1rem;color:#1a1a1a;
+  transition:border-color .2s,box-shadow .2s;outline:none;width:100%}
+.field input:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,107,48,.12)}
+.field input::placeholder{color:#bbb}
+.field .hint{font-size:.78rem;color:#888;margin-top:2px}
 
-/* ── PIN ── */
-.pin-dots{display:flex;gap:12px;justify-content:center;margin:20px 0}
-.pin-dot{width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(0,0,0,.2);background:transparent;transition:background .15s,border-color .15s}
-.pin-dot.filled{background:var(--red);border-color:var(--red)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
-.pin-key{
-  padding:16px 8px;border:1.5px solid rgba(0,0,0,.1);border-radius:12px;
-  background:#f8f9fa;font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:800;
-  cursor:pointer;transition:background .1s,transform .1s;color:var(--text);
-}
-.pin-key:active{background:#e9ecef;transform:scale(.93)}
-.pin-key.del{font-size:1rem;color:var(--text-soft)}
-.pin-err{color:var(--red-light);font-size:.8rem;text-align:center;min-height:20px;margin-top:4px;font-weight:700}
+/* ── BOTONES ────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:12px;padding:14px 24px;font-family:var(--font);
+  font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;
+  text-decoration:none;width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--green),#0d4a1a);color:#fff;
+  box-shadow:0 4px 20px rgba(30,107,48,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 25px rgba(30,107,48,.45)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b8961e);color:#1a1a1a;
+  box-shadow:0 4px 20px rgba(212,175,55,.3)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 25px rgba(212,175,55,.4)}
+.btn-ghost{background:transparent;color:#555;border:2px solid #ddd}
+.btn-ghost:hover{border-color:#aaa;color:#333}
+.btn-danger{background:linear-gradient(135deg,#c0392b,#962d22);color:#fff}
+.btn-sm{padding:10px 18px;font-size:.88rem}
 
-/* ── REVELACIÓN ── */
-#v-reveal{background:transparent}
-.reveal-card{
-  background:linear-gradient(160deg,#1a3d1f,#0a1f0f);
-  border:1px solid rgba(212,175,55,.3);
-  border-radius:24px;padding:36px 28px;
-  width:100%;max-width:380px;text-align:center;
-  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 40px rgba(212,175,55,.1);
-  position:relative;overflow:hidden;
-}
-.reveal-card::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 0%,rgba(212,175,55,.1),transparent 60%);
-}
-.mission-txt{font-size:.8rem;font-weight:800;color:rgba(212,175,55,.7);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
-.mission-main{font-size:1.3rem;font-weight:900;color:#fff;line-height:1.3;margin-bottom:24px}
+/* ── PIN TECLADO ────────────────────────────────────── */
+.pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0}
+.pin-dot{width:52px;height:64px;border:2px solid #ddd;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;font-weight:900;color:#1a1a1a;
+  transition:all .15s;background:#fafafa}
+.pin-dot.filled{border-color:var(--green);background:#f0fff4;color:var(--green)}
+.pin-dot.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.2)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+.key{background:#f5f5f5;border:2px solid #e8e8e8;border-radius:12px;
+  padding:16px;font-size:1.3rem;font-weight:700;cursor:pointer;
+  transition:all .15s;text-align:center;user-select:none;color:#1a1a1a}
+.key:hover{background:#efefef;border-color:#ccc;transform:scale(1.03)}
+.key:active{transform:scale(.96);background:#e0e0e0}
+.key-del{font-size:1rem;color:#888}
+.key-empty{visibility:hidden}
 
-/* Caja animada */
-.gift-box-wrap{position:relative;width:120px;height:120px;margin:0 auto 24px;cursor:pointer}
-.gift-box{font-size:7rem;line-height:1;animation:gift-pulse 2s ease-in-out infinite;display:block;user-select:none}
-@keyframes gift-pulse{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08) rotate(2deg)}}
-.gift-box.opening{animation:gift-open .6s ease-out forwards}
-@keyframes gift-open{0%{transform:scale(1)}30%{transform:scale(1.3) rotate(-10deg)}60%{transform:scale(.8) rotate(15deg)}100%{transform:scale(0) rotate(30deg);opacity:0}}
+/* ── LISTA PARTICIPANTES ───────────────────────────── */
+.participants-list{display:flex;flex-direction:column;gap:8px}
+.participant-row{display:flex;align-items:center;gap:10px;
+  background:#f9fafb;border:1.5px solid #eee;border-radius:10px;padding:10px 12px}
+.participant-row input{flex:1;border:none;background:transparent;
+  font-family:var(--font);font-size:.95rem;color:#1a1a1a;outline:none}
+.participant-row input::placeholder{color:#bbb}
+.btn-remove{background:none;border:none;color:#ccc;cursor:pointer;
+  font-size:1.2rem;padding:0 2px;line-height:1;transition:color .15s}
+.btn-remove:hover{color:var(--red)}
+.btn-add-participant{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:#f0fff4;border:2px dashed #aed6b8;border-radius:10px;
+  color:var(--green);font-weight:700;cursor:pointer;width:100%;
+  font-family:var(--font);font-size:.95rem;transition:all .15s}
+.btn-add-participant:hover{background:#e0f5e8;border-color:var(--green)}
 
-/* Resultado */
-.result-wrap{display:none}
-.result-wrap.show{display:block;animation:result-in .5s ease-out}
-@keyframes result-in{0%{opacity:0;transform:translateY(30px) scale(.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
-.result-label{font-size:.78rem;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
-.result-name{font-size:2.4rem;font-weight:900;color:var(--gold-light);line-height:1;margin-bottom:6px;text-shadow:0 0 30px rgba(240,208,96,.4)}
-.result-hint{font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:28px}
-.confetti-row{font-size:1.6rem;margin-bottom:16px;animation:confetti-dance .8s ease-out}
-@keyframes confetti-dance{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+/* ── SELECTOR DE NOMBRE ─────────────────────────────── */
+.names-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.name-btn{background:#f9fafb;border:2px solid #e8e8e8;border-radius:12px;
+  padding:14px 10px;font-family:var(--font);font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;color:#1a1a1a;text-align:center}
+.name-btn:hover{background:#f0fff4;border-color:var(--green);color:var(--green)}
+.name-btn.selected{background:var(--green);border-color:var(--green);color:#fff}
 
-/* partículas */
-.particle{position:absolute;pointer-events:none;font-size:1.2rem;animation:particle-fly .8s ease-out forwards}
-@keyframes particle-fly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+/* ── REVEAL ─────────────────────────────────────────── */
+.gift-box{font-size:5rem;text-align:center;cursor:pointer;line-height:1;
+  animation:float 3s ease-in-out infinite;user-select:none;
+  filter:drop-shadow(0 8px 24px rgba(212,175,55,.3))}
+.gift-box:hover{animation:wiggle .5s ease-in-out}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.reveal-name{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:800;
+  color:var(--green);text-align:center;line-height:1.2;
+  animation:reveal .6s cubic-bezier(.17,.67,.35,1.3)}
+@keyframes reveal{0%{opacity:0;transform:scale(.7) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.confetti-piece{position:absolute;top:-20px;width:8px;height:12px;
+  animation:confetti-fall var(--cf-dur,3s) ease-in var(--cf-del,0s) forwards}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 
-/* ── FOOTER ── */
-.app-footer{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:.7rem;color:rgba(255,255,255,.25);z-index:5;pointer-events:none}
+/* ── TABLA DE PINES ────────────────────────────────── */
+.pin-table{width:100%;border-collapse:collapse;font-size:.92rem}
+.pin-table th{text-align:left;font-size:.75rem;text-transform:uppercase;
+  letter-spacing:.5px;color:#666;padding:8px 10px;border-bottom:2px solid #eee}
+.pin-table td{padding:9px 10px;border-bottom:1px solid #f0f0f0;color:#1a1a1a}
+.pin-table tr:last-child td{border-bottom:none}
+.pin-badge{display:inline-block;background:#f0fff4;border:1.5px solid #aed6b8;
+  border-radius:8px;padding:3px 10px;font-weight:800;font-size:1rem;
+  letter-spacing:2px;color:var(--green);font-family:monospace}
+.admin-badge{background:#fff8e7;border-color:#f0d060;color:#8a6d00}
+.event-link{background:#f9f9f9;border:1.5px solid #e0e0e0;border-radius:10px;
+  padding:10px 14px;font-size:.88rem;color:#555;word-break:break-all;
+  font-family:monospace}
 
-/* ── SPINNER ── */
-.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:20px auto}
+/* ── STEPS ──────────────────────────────────────────── */
+.steps{display:flex;gap:0;margin-bottom:4px;width:100%}
+.step{flex:1;height:4px;background:#e0e0e0;border-radius:4px;margin:0 2px;
+  transition:background .4s}
+.step.done{background:var(--green)}
+.step.active{background:var(--gold)}
+
+/* ── ALERTS ─────────────────────────────────────────── */
+.alert{border-radius:10px;padding:12px 16px;font-size:.88rem;margin-bottom:12px;font-weight:600}
+.alert-err{background:#fff0f0;border:1.5px solid #fcc;color:#c0392b}
+.alert-ok{background:#f0fff4;border:1.5px solid #aed6b8;color:#1e6b30}
+.alert-warn{background:#fffbf0;border:1.5px solid #f0d060;color:#8a6d00}
+
+/* ── SPINNER ─────────────────────────────────────────── */
+.spinner{width:22px;height:22px;border:3px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--green)}
 
-@media(max-width:400px){
-  .card{padding:24px 18px}
-  .reveal-card{padding:28px 20px}
-  .result-name{font-size:2rem}
-}
+/* ── HOME ───────────────────────────────────────────── */
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+.home-card{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:22px 16px;text-align:center;cursor:pointer;
+  transition:all .2s;text-decoration:none;color:var(--cream)}
+.home-card:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);
+  transform:translateY(-3px)}
+.home-card-icon{font-size:2.4rem;margin-bottom:10px}
+.home-card-title{font-size:1rem;font-weight:800;margin-bottom:4px}
+.home-card-desc{font-size:.78rem;opacity:.6;line-height:1.4}
+
+/* ── BRANDING ────────────────────────────────────────── */
+.claunet-badge{font-size:.75rem;color:rgba(255,255,255,.3);text-align:center;
+  margin-top:8px}
+.claunet-badge a{color:rgba(255,255,255,.4);text-decoration:none}
+.claunet-badge a:hover{color:rgba(255,255,255,.7)}
+
+/* ── MODAL DE CONFIRMACIÓN ───────────────────────────── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:100;display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:var(--r);padding:28px;max-width:380px;
+  width:100%;color:#1a1a1a;text-align:center;
+  transform:scale(.9);transition:transform .2s}
+.modal-backdrop.open .modal{transform:scale(1)}
+.modal h3{font-size:1.3rem;font-weight:800;margin-bottom:8px}
+.modal p{color:#555;font-size:.9rem;line-height:1.5;margin-bottom:20px}
+.modal-btns{display:flex;gap:10px}
+
+/* ── UTILIDADES ──────────────────────────────────────── */
+.text-center{text-align:center}
+.text-sm{font-size:.85rem}
+.text-muted{color:#888}
+.mt-2{margin-top:8px}
+.mt-4{margin-top:16px}
+.gap-2{gap:8px}
+.w-full{width:100%}
+.divider{border:none;border-top:1.5px solid #eee;margin:16px 0}
+.badge-event{display:inline-block;background:linear-gradient(135deg,var(--green),#0a3d14);
+  color:#fff;border-radius:50px;padding:4px 14px;font-size:.8rem;font-weight:700;
+  letter-spacing:1px}
 </style>
 </head>
 <body>
 
-<!-- Escena de fondo -->
-<div class="bg-scene">
-  <div class="stars" id="stars"></div>
-  <div class="snow-wrap" id="snow"></div>
+<!-- Fondo -->
+<div id="bg">
+  <div id="stars"></div>
+  <div id="snow"></div>
 </div>
 
 <!-- Luces navideñas -->
-<div class="lights" id="lights">
-  <div class="light-wire"></div>
+<div id="lights"><div class="wire"></div></div>
+
+<!-- Modal confirmación sorteo -->
+<div class="modal-backdrop" id="modal-draw">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:12px">🎲</div>
+    <h3>¿Realizamos el sorteo?</h3>
+    <p>Esta acción es <strong>irreversible</strong>. Una vez sorteado, no se puede volver a sortear ni cambiar los participantes.</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirm-draw">¡Sí, sortear!</button>
+    </div>
+  </div>
 </div>
 
-<!-- Vistas -->
-<div class="view active" id="v-welcome">
-  <div class="card">
-    <div class="welcome-icon">🎄</div>
-    <div class="welcome-title">Amigo Secreto<br>Navidad 2026</div>
-    <div class="welcome-sub">¡Llega la magia de la Navidad! 🎅</div>
-    <div class="gold-line"></div>
-    <div class="info-row"><span class="info-icon">📅</span><span>Fecha de entrega <span class="info-val">23 Dic 2026</span></span></div>
-    <div class="info-row"><span class="info-icon">💰</span><span>Máximo por regalo <span class="info-val">$10.000 CLP</span></span></div>
-    <div class="info-row"><span class="info-icon">🔒</span><span>Solo tú sabrás a quién le tocas</span></div>
-    <div class="participants-wrap">
-      <div class="participants-title">Participantes</div>
-      <div class="participants-grid">
-        <div class="participant-chip">Maru</div>
-        <div class="participant-chip">Pricila</div>
-        <div class="participant-chip">Inés</div>
-        <div class="participant-chip">Bernardo</div>
-        <div class="participant-chip">Claudio</div>
-        <div class="participant-chip">Juan Carlos</div>
-        <div class="participant-chip">Cecilia</div>
-        <div class="participant-chip">Álvaro</div>
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confetti"></div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- ══ HOME ══════════════════════════════════════════ -->
+  <div class="page active" id="page-home">
+    <div class="site-header">
+      <div class="site-logo">🎁</div>
+      <div class="site-title">Amigo Secreto</div>
+      <div class="site-sub">Organiza tu sorteo navideño en 2 minutos</div>
+    </div>
+
+    <div class="home-cards">
+      <a class="home-card" onclick="goTo('page-create')">
+        <div class="home-card-icon">🎄</div>
+        <div class="home-card-title">Crear evento</div>
+        <div class="home-card-desc">Organiza tu Amigo Secreto desde cero</div>
+      </a>
+      <a class="home-card" onclick="showJoinForm()">
+        <div class="home-card-icon">🔑</div>
+        <div class="home-card-title">Tengo código</div>
+        <div class="home-card-desc">Ya me mandaron el link del evento</div>
+      </a>
+    </div>
+
+    <div class="card" id="join-form" style="display:none">
+      <div class="card-body">
+        <div class="field">
+          <label>Código del evento</label>
+          <input type="text" id="join-code" placeholder="Ej: XMAS26" maxlength="8"
+            style="text-transform:uppercase;letter-spacing:3px;font-size:1.2rem;font-weight:700;text-align:center">
+        </div>
+        <button class="btn btn-primary" onclick="joinEvent()">Ir al evento →</button>
       </div>
     </div>
-    <button class="btn-main" onclick="showView('v-select')">🎁 Descubrir mi amigo secreto</button>
-  </div>
-</div>
 
-<div class="view" id="v-select">
-  <div class="card">
-    <div style="font-size:1.1rem;font-weight:900;margin-bottom:4px">¿Quién eres? 👋</div>
-    <div style="font-size:.82rem;color:var(--text-soft);margin-bottom:16px">Selecciona tu nombre para continuar</div>
-    <div class="name-grid" id="name-grid"></div>
-    <button class="btn-sec" onclick="showView('v-welcome')">← Volver</button>
-  </div>
-</div>
-
-<div class="view" id="v-pin">
-  <div class="card">
-    <div style="text-align:center;font-size:1.5rem;margin-bottom:8px">🔑</div>
-    <div style="font-size:1.1rem;font-weight:900;text-align:center;margin-bottom:4px">Ingresa tu PIN</div>
-    <div style="font-size:.82rem;color:var(--text-soft);text-align:center;margin-bottom:4px" id="pin-username-label">Hola, —</div>
-    <div class="pin-dots" id="pin-dots">
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-    </div>
-    <div class="pin-err" id="pin-err"></div>
-    <div class="pin-pad" id="pin-pad"></div>
-    <button class="btn-sec" onclick="showView('v-select'); pinReset()">← Cambiar nombre</button>
-  </div>
-</div>
-
-<div class="view" id="v-reveal">
-  <div class="reveal-card" id="reveal-card">
-    <div class="mission-txt">Tu misión navideña</div>
-    <div class="mission-main" id="reveal-mission">Toca el regalo para descubrir<br>a tu Amigo Secreto 🎁</div>
-    <div class="gift-box-wrap" id="gift-wrap" onclick="abrirRegalo()">
-      <span class="gift-box" id="gift-box">🎁</span>
-    </div>
-    <div class="result-wrap" id="result-wrap">
-      <div class="confetti-row" id="confetti-row">🎊 🎉 🎊</div>
-      <div class="result-label">Tu Amigo Secreto es…</div>
-      <div class="result-name" id="result-name">—</div>
-      <div class="result-hint">Este resultado es solo tuyo. ¡Que comience la misión! 🎅</div>
-      <button class="btn-main gold" onclick="showView('v-welcome'); pinReset(); _selectedUser=null">🏠 Volver al inicio</button>
+    <div class="claunet-badge">
+      Herramienta gratuita por <a href="https://claunet.cl" target="_blank">ClauNet</a>
     </div>
   </div>
-</div>
 
-<div class="app-footer">amigosecreto.claunet.cl · ClauNet 2026</div>
+  <!-- ══ CREAR EVENTO ════════════════════════════════════ -->
+  <div class="page" id="page-create">
+    <div class="site-header">
+      <div class="site-logo">🎄</div>
+      <div class="site-title">Crear evento</div>
+    </div>
+
+    <!-- Paso 1: datos del evento -->
+    <div class="card" id="step-event-data">
+      <div class="card-head">
+        <h2>📋 Datos del evento</h2>
+        <p>Paso 1 de 3</p>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step active"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+        </div>
+        <br>
+        <div class="field">
+          <label>Nombre del evento *</label>
+          <input type="text" id="event-name" placeholder="Ej: Amigo Secreto CAJ 2026" maxlength="80">
+        </div>
+        <div class="field">
+          <label>Fecha de entrega</label>
+          <input type="date" id="event-date">
+          <span class="hint">Opcional — aparece como recordatorio en el evento</span>
+        </div>
+        <div class="field">
+          <label>Monto máximo (CLP)</label>
+          <input type="number" id="event-amount" placeholder="Ej: 10000" min="100" max="10000000">
+          <span class="hint">Opcional</span>
+        </div>
+        <button class="btn btn-primary" onclick="goToStep2()">Siguiente →</button>
+        <button class="btn btn-ghost mt-2" onclick="goTo('page-home')">← Volver</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: participantes -->
+    <div class="card" id="step-participants" style="display:none">
+      <div class="card-head">
+        <h2>👥 Participantes</h2>
+        <p>Paso 2 de 3</p>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step done"></div>
+          <div class="step active"></div>
+          <div class="step"></div>
+        </div>
+        <br>
+        <div class="participants-list" id="participants-list"></div>
+        <button class="btn-add-participant" onclick="addParticipantRow()" id="btn-add">
+          <span style="font-size:1.2rem">+</span> Agregar participante
+        </button>
+        <div id="participants-error" class="alert alert-err mt-2" style="display:none"></div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn btn-ghost" onclick="backToStep1()" style="width:auto;padding:14px 20px">←</button>
+          <button class="btn btn-primary" onclick="goToStep3()">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 3: confirmación -->
+    <div class="card" id="step-confirm" style="display:none">
+      <div class="card-head">
+        <h2>✅ Confirmar y crear</h2>
+        <p>Paso 3 de 3</p>
+      </div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step done"></div>
+          <div class="step done"></div>
+          <div class="step active"></div>
+        </div>
+        <br>
+        <div id="confirm-summary"></div>
+        <div class="alert alert-warn mt-2">
+          Al crear el evento, se generarán los PINs automáticamente. <strong>Guárdalos de inmediato</strong> porque no se pueden recuperar.
+        </div>
+        <button class="btn btn-primary" id="btn-create" onclick="createEvent()">
+          🎁 Crear evento y generar PINs
+        </button>
+        <button class="btn btn-ghost mt-2" onclick="backToStep2()">← Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTADO: EVENTO CREADO ═══════════════════════ -->
+  <div class="page" id="page-created">
+    <div class="site-header">
+      <div class="site-logo">🎉</div>
+      <div class="site-title">¡Evento creado!</div>
+      <div class="site-sub">Guarda esto antes de cerrar</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" style="background:linear-gradient(135deg,#8a6d00,#5a4700)">
+        <h2>🔗 Link del evento</h2>
+        <p>Comparte este link con todos los participantes</p>
+      </div>
+      <div class="card-body">
+        <div class="event-link" id="event-link-display"></div>
+        <button class="btn btn-gold mt-2" onclick="copyEventLink()">📋 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>🔐 PINs de los participantes</h2>
+        <p>Envía cada PIN por privado — nadie más debe verlo</p>
+      </div>
+      <div class="card-body">
+        <table class="pin-table" id="pins-table"></table>
+        <hr class="divider">
+        <div class="field">
+          <label>Tu PIN de administrador</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="pin-badge admin-badge" id="admin-pin-display"></span>
+            <span class="text-sm text-muted">Solo para ti. No lo compartas.</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="copyAllPins()">📱 Copiar todo para WhatsApp</button>
+        <button class="btn btn-ghost mt-2" onclick="goToAdmin()">Ir a mi panel de admin →</button>
+      </div>
+    </div>
+
+    <div class="claunet-badge">
+      Herramienta gratuita por <a href="https://claunet.cl" target="_blank">ClauNet</a>
+    </div>
+  </div>
+
+  <!-- ══ EVENTO: VISTA PARTICIPANTE ═════════════════════ -->
+  <div class="page" id="page-event">
+    <div class="site-header">
+      <div class="site-logo">🎁</div>
+      <div class="site-title" id="event-title-display">Amigo Secreto</div>
+      <div class="site-sub" id="event-meta-display"></div>
+    </div>
+
+    <!-- Selector de nombre -->
+    <div class="card" id="card-name-select">
+      <div class="card-head">
+        <h2>¿Quién eres tú?</h2>
+        <p>Selecciona tu nombre de la lista</p>
+      </div>
+      <div class="card-body">
+        <div class="names-grid" id="names-grid"></div>
+        <div id="name-select-error" class="alert alert-err mt-2" style="display:none"></div>
+        <button class="btn btn-primary mt-2" onclick="goToPin()" id="btn-go-pin" style="display:none">
+          Continuar →
+        </button>
+      </div>
+    </div>
+
+    <!-- Input PIN -->
+    <div class="card" id="card-pin-input" style="display:none">
+      <div class="card-head">
+        <h2 id="pin-card-title">🔐 Ingresa tu PIN</h2>
+        <p>El organizador te lo envió por privado</p>
+      </div>
+      <div class="card-body">
+        <div class="pin-display" id="pin-display">
+          <div class="pin-dot" id="dot-0">•</div>
+          <div class="pin-dot" id="dot-1">•</div>
+          <div class="pin-dot" id="dot-2">•</div>
+          <div class="pin-dot" id="dot-3">•</div>
+        </div>
+        <div class="keypad">
+          <button class="key" onclick="keyPress('1')">1</button>
+          <button class="key" onclick="keyPress('2')">2</button>
+          <button class="key" onclick="keyPress('3')">3</button>
+          <button class="key" onclick="keyPress('4')">4</button>
+          <button class="key" onclick="keyPress('5')">5</button>
+          <button class="key" onclick="keyPress('6')">6</button>
+          <button class="key" onclick="keyPress('7')">7</button>
+          <button class="key" onclick="keyPress('8')">8</button>
+          <button class="key" onclick="keyPress('9')">9</button>
+          <button class="key key-empty"></button>
+          <button class="key" onclick="keyPress('0')">0</button>
+          <button class="key key-del" onclick="keyDel()">⌫</button>
+        </div>
+        <div id="pin-error" class="alert alert-err mt-2" style="display:none"></div>
+        <button class="btn btn-ghost mt-2 btn-sm" onclick="backToNames()">← Cambiar nombre</button>
+      </div>
+    </div>
+
+    <!-- Reveal -->
+    <div class="card" id="card-reveal" style="display:none">
+      <div class="card-body text-center" style="padding:32px 24px">
+        <p style="color:#555;font-size:.9rem;margin-bottom:20px" id="reveal-greeting"></p>
+        <div class="gift-box" id="gift-box" onclick="openGift()" title="Toca para abrir">🎁</div>
+        <p style="color:#aaa;font-size:.8rem;margin-top:12px" id="tap-hint">Toca el regalo para descubrir tu amigo secreto</p>
+        <div id="reveal-result" style="display:none">
+          <div style="font-size:.9rem;color:#555;margin-bottom:8px">Tu amigo secreto es:</div>
+          <div class="reveal-name" id="reveal-name"></div>
+          <div style="margin-top:24px;font-size:2rem">🎊</div>
+          <p style="color:#888;font-size:.8rem;margin-top:16px">¡No se lo cuentes a nadie! 🤫</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="claunet-badge">
+      Herramienta gratuita por <a href="https://claunet.cl" target="_blank">ClauNet</a>
+    </div>
+  </div>
+
+  <!-- ══ PANEL ADMIN ════════════════════════════════════ -->
+  <div class="page" id="page-admin">
+    <div class="site-header">
+      <div class="site-logo">⚙️</div>
+      <div class="site-title">Panel Admin</div>
+      <div class="site-sub" id="admin-event-name"></div>
+    </div>
+
+    <!-- Login admin -->
+    <div class="card" id="card-admin-login">
+      <div class="card-head">
+        <h2>🔐 PIN de administrador</h2>
+        <p>Solo el organizador del evento tiene este PIN</p>
+      </div>
+      <div class="card-body">
+        <div class="pin-display" id="admin-pin-display-dots">
+          <div class="pin-dot" id="adot-0">•</div>
+          <div class="pin-dot" id="adot-1">•</div>
+          <div class="pin-dot" id="adot-2">•</div>
+          <div class="pin-dot" id="adot-3">•</div>
+        </div>
+        <div class="keypad">
+          <button class="key" onclick="adminKeyPress('1')">1</button>
+          <button class="key" onclick="adminKeyPress('2')">2</button>
+          <button class="key" onclick="adminKeyPress('3')">3</button>
+          <button class="key" onclick="adminKeyPress('4')">4</button>
+          <button class="key" onclick="adminKeyPress('5')">5</button>
+          <button class="key" onclick="adminKeyPress('6')">6</button>
+          <button class="key" onclick="adminKeyPress('7')">7</button>
+          <button class="key" onclick="adminKeyPress('8')">8</button>
+          <button class="key" onclick="adminKeyPress('9')">9</button>
+          <button class="key key-empty"></button>
+          <button class="key" onclick="adminKeyPress('0')">0</button>
+          <button class="key key-del" onclick="adminKeyDel()">⌫</button>
+        </div>
+        <div id="admin-pin-error" class="alert alert-err mt-2" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Panel admin autenticado -->
+    <div class="card" id="card-admin-panel" style="display:none">
+      <div class="card-head">
+        <h2>Panel de administración</h2>
+        <p id="admin-draw-status"></p>
+      </div>
+      <div class="card-body">
+        <div id="admin-not-drawn">
+          <div class="alert alert-warn">El sorteo todavía no se ha realizado.</div>
+          <button class="btn btn-primary mt-2" onclick="confirmDraw()">🎲 Realizar sorteo</button>
+        </div>
+        <div id="admin-drawn-ok" style="display:none">
+          <div class="alert alert-ok">✅ Sorteo realizado. Los participantes ya pueden ver su amigo secreto.</div>
+        </div>
+        <hr class="divider">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:12px">Participantes</h3>
+        <div id="admin-participants-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        <hr class="divider">
+        <div class="field">
+          <label>Link del evento</label>
+          <div class="event-link" id="admin-event-link"></div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="adminCopyLink()">📋 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="claunet-badge">
+      Herramienta gratuita por <a href="https://claunet.cl" target="_blank">ClauNet</a>
+    </div>
+  </div>
+
+</div><!-- /app -->
 
 <script>
-// ═══════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════
-const SB_URL = 'https://mcldbaubekjxpufmtrmk.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbGRiYXViZWtqeHB1Zm10cm1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4ODY2NjcsImV4cCI6MjEwODQ2MjY2N30.ooSZNrkEDlICGsv77esUv-ZhxzzfW3ZASoqEXIVW1I4';
-const TABLE  = 'amigo_secreto_2026';
+// ══════════════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://mcldbaubekjxpufmtrmk.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbGRiYXViZWtqeHB1Zm10cm1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIwMzE0NzUsImV4cCI6MjA0NzYwNzQ3NX0.LmVPVzJiMnIxUzJncHNMd0FwbkxYZXdHd1J6NklWOFU';
+const EDGE_BASE = `${SUPABASE_URL}/functions/v1`;
 
-// Participantes con PINs hasheados (SHA-256 del PIN)
-// Los PINs reales los conoce solo el organizador
-const PARTICIPANTES = [
-  { nombre: 'Maru',        pin_hash: null, id: 'maru'       },
-  { nombre: 'Pricila',     pin_hash: null, id: 'pricila'    },
-  { nombre: 'Inés',        pin_hash: null, id: 'ines'       },
-  { nombre: 'Bernardo',    pin_hash: null, id: 'bernardo'   },
-  { nombre: 'Claudio',     pin_hash: null, id: 'claudio'    },
-  { nombre: 'Juan Carlos', pin_hash: null, id: 'juancarlos' },
-  { nombre: 'Cecilia',     pin_hash: null, id: 'cecilia'    },
-  { nombre: 'Álvaro',      pin_hash: null, id: 'alvaro'     },
-];
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-const EMOJIS = ['🦌','⛄','🎅','🤶','🧦','🔔','🕯️','🌟'];
+// ══════════════════════════════════════════════════════════
+// FONDO NAVIDEÑO
+// ══════════════════════════════════════════════════════════
+(function initBg() {
+  // Estrellas
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;--delay:${Math.random()*5}s;--op:${0.4+Math.random()*.6}`;
+    starsEl.appendChild(s);
+  }
 
-let _sb = null;
-let _selectedUser = null;
-let _pinBuffer = '';
-let _dbRows = {}; // {id: row}
+  // Copos
+  const snowEl = document.getElementById('snow');
+  const flakes = ['❄','❅','❆','*','·'];
+  for (let i = 0; i < 25; i++) {
+    const f = document.createElement('div');
+    f.className = 'flake';
+    f.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+    f.style.cssText = `--x:${Math.random()*100}%;--sz:${10+Math.random()*14}px;
+      --dur:${7+Math.random()*10}s;--del:${Math.random()*12}s`;
+    snowEl.appendChild(f);
+  }
 
-// ═══════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════
-(async function init(){
-  renderStars();
-  renderSnow();
-  renderLights();
-  _sb = supabase.createClient(SB_URL, SB_KEY);
-  await cargarEstados();
-  renderNameGrid();
+  // Luces
+  const lightsEl = document.getElementById('lights');
+  const colors = ['#ff4444','#44cc44','#ffcc00','#4488ff','#ff88cc','#ff8800'];
+  const n = Math.floor(window.innerWidth / 36) + 2;
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('div');
+    b.className = 'bulb';
+    const c = colors[i % colors.length];
+    b.style.cssText = `background:${c};box-shadow:0 0 8px ${c};--gd:${1.5+Math.random()}s;--go:${Math.random()*2}s`;
+    lightsEl.appendChild(b);
+  }
 })();
 
-async function cargarEstados(){
-  try {
-    const {data} = await _sb.from(TABLE).select('id,visto');
-    if(data) data.forEach(r => { _dbRows[r.id] = r; });
-  } catch(e){ console.warn('No se pudo cargar estados:', e); }
+// ══════════════════════════════════════════════════════════
+// ROUTER (hash-based)
+// ══════════════════════════════════════════════════════════
+let currentEventCode = null;
+let currentEventData = null;
+let selectedParticipant = null;
+let pinBuffer = '';
+let adminPinBuffer = '';
+let pendingAdminPin = '';  // se guarda al crear evento
+
+function route() {
+  const hash = location.hash || '#/';
+  if (hash === '#/' || hash === '') return goTo('page-home');
+  if (hash === '#/organizar') return goTo('page-create');
+
+  const matchEvent = hash.match(/^#\/e\/([A-Z0-9]{4,8})(?:\/admin)?$/i);
+  if (matchEvent) {
+    currentEventCode = matchEvent[1].toUpperCase();
+    if (hash.includes('/admin')) {
+      loadAdminPage();
+    } else {
+      loadEventPage();
+    }
+    return;
+  }
+
+  goTo('page-home');
 }
 
-// ═══════════════════════════════════════
-// VISTAS
-// ═══════════════════════════════════════
-function showView(id){
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+window.addEventListener('hashchange', route);
+window.addEventListener('load', route);
+
+function goTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId)?.classList.add('active');
+  window.scrollTo(0, 0);
 }
 
-// ═══════════════════════════════════════
-// SELECTOR DE NOMBRE
-// ═══════════════════════════════════════
-function renderNameGrid(){
-  const grid = document.getElementById('name-grid');
-  grid.innerHTML = PARTICIPANTES.map((p,i) => {
-    const visto = _dbRows[p.id]?.visto;
-    return `<button class="name-btn${visto?' seen':''}" onclick="seleccionarNombre('${p.id}')">
-      <span class="nb-icon">${EMOJIS[i]}</span>
-      <span>${p.nombre}</span>
-      ${visto ? '<span class="nb-check">✓</span>' : ''}
-    </button>`;
-  }).join('');
+// ══════════════════════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════════════════════
+function showJoinForm() {
+  const f = document.getElementById('join-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display !== 'none') document.getElementById('join-code').focus();
 }
 
-function seleccionarNombre(id){
-  _selectedUser = PARTICIPANTES.find(p => p.id === id);
-  document.getElementById('pin-username-label').textContent = `Hola, ${_selectedUser.nombre} 👋`;
-  pinReset();
-  renderPinPad();
-  showView('v-pin');
+function joinEvent() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (!code) return;
+  location.hash = `#/e/${code}`;
 }
 
-// ═══════════════════════════════════════
-// PIN
-// ═══════════════════════════════════════
-function renderPinPad(){
-  const pad = document.getElementById('pin-pad');
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  pad.innerHTML = keys.map(k => {
-    if(k === '') return '<div></div>';
-    const cls = k === '⌫' ? 'pin-key del' : 'pin-key';
-    const action = k === '⌫' ? 'pinDel()' : `pinKey('${k}')`;
-    return `<button class="${cls}" onclick="${action}">${k}</button>`;
-  }).join('');
+// ══════════════════════════════════════════════════════════
+// CREAR EVENTO — Paso 1
+// ══════════════════════════════════════════════════════════
+function goToStep2() {
+  const name = document.getElementById('event-name').value.trim();
+  if (!name) {
+    alert('Dale un nombre al evento po');
+    return;
+  }
+  document.getElementById('step-event-data').style.display = 'none';
+  document.getElementById('step-participants').style.display = 'block';
+  if (document.getElementById('participants-list').children.length === 0) {
+    // Iniciar con 3 filas vacías
+    addParticipantRow(); addParticipantRow(); addParticipantRow();
+  }
 }
 
-function pinKey(k){
-  if(_pinBuffer.length >= 4) return;
-  _pinBuffer += k;
-  updatePinDots();
-  document.getElementById('pin-err').textContent = '';
-  if(_pinBuffer.length === 4) setTimeout(verificarPin, 150);
+function backToStep1() {
+  document.getElementById('step-participants').style.display = 'none';
+  document.getElementById('step-event-data').style.display = 'block';
 }
 
-function pinDel(){
-  _pinBuffer = _pinBuffer.slice(0,-1);
-  updatePinDots();
+// ── Participantes ─────────────────────────────────────────
+function addParticipantRow(value = '') {
+  const list = document.getElementById('participants-list');
+  const row = document.createElement('div');
+  row.className = 'participant-row';
+  row.innerHTML = `
+    <span style="color:#ccc;font-size:.85rem;min-width:20px">${list.children.length + 1}.</span>
+    <input type="text" placeholder="Nombre y apellido" value="${value}" maxlength="60"
+      onkeydown="if(event.key==='Enter'){addParticipantRow();event.preventDefault()}">
+    <button class="btn-remove" onclick="removeParticipantRow(this)" title="Quitar">×</button>`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+  updateParticipantNumbers();
 }
 
-function pinReset(){
-  _pinBuffer = '';
-  updatePinDots();
-  const err = document.getElementById('pin-err');
-  if(err) err.textContent = '';
+function removeParticipantRow(btn) {
+  btn.closest('.participant-row').remove();
+  updateParticipantNumbers();
 }
 
-function updatePinDots(){
-  document.querySelectorAll('.pin-dot').forEach((d,i) => {
-    d.classList.toggle('filled', i < _pinBuffer.length);
+function updateParticipantNumbers() {
+  document.querySelectorAll('#participants-list .participant-row').forEach((row, i) => {
+    row.querySelector('span').textContent = (i + 1) + '.';
   });
 }
 
-// Rate limiting en memoria: máx 5 intentos por participante por sesión
-const _intentosFallidos = {};
-const MAX_INTENTOS = 5;
-const BLOQUEO_MS = 5 * 60 * 1000; // 5 minutos
-const _bloqueadoHasta = {};
+function getParticipantNames() {
+  return Array.from(document.querySelectorAll('#participants-list .participant-row input'))
+    .map(inp => inp.value.trim()).filter(Boolean);
+}
 
-async function verificarPin(){
-  if(!_selectedUser) return;
-  const id = _selectedUser.id;
-  document.getElementById('pin-err').textContent = '';
+function goToStep3() {
+  const names = getParticipantNames();
+  const errEl = document.getElementById('participants-error');
 
-  // Verificar bloqueo temporal
-  if(_bloqueadoHasta[id] && Date.now() < _bloqueadoHasta[id]){
-    const mins = Math.ceil((_bloqueadoHasta[id] - Date.now()) / 60000);
-    document.getElementById('pin-err').textContent = `Demasiados intentos. Espera ${mins} min.`;
-    pinReset(); return;
+  if (names.length < 3) {
+    errEl.textContent = 'Se necesitan al menos 3 participantes para el sorteo';
+    errEl.style.display = 'block'; return;
   }
+  const uniq = new Set(names);
+  if (uniq.size !== names.length) {
+    errEl.textContent = 'Hay nombres repetidos en la lista';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  const eventName = document.getElementById('event-name').value.trim();
+  const eventDate = document.getElementById('event-date').value;
+  const eventAmount = document.getElementById('event-amount').value;
+
+  let summary = `<div style="margin-bottom:14px">
+    <div style="font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Evento</div>
+    <div style="font-weight:800;font-size:1.1rem">${eventName}</div>`;
+  if (eventDate) summary += `<div style="font-size:.88rem;color:#555">📅 ${formatDate(eventDate)}</div>`;
+  if (eventAmount) summary += `<div style="font-size:.88rem;color:#555">💰 Hasta $${Number(eventAmount).toLocaleString('es-CL')}</div>`;
+  summary += `</div>
+    <div style="font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+      Participantes (${names.length})
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">`;
+  names.forEach(n => {
+    summary += `<span style="background:#f0fff4;border:1px solid #aed6b8;border-radius:8px;padding:3px 10px;font-size:.88rem;color:var(--green)">${n}</span>`;
+  });
+  summary += '</div>';
+
+  document.getElementById('confirm-summary').innerHTML = summary;
+  document.getElementById('step-participants').style.display = 'none';
+  document.getElementById('step-confirm').style.display = 'block';
+}
+
+function backToStep2() {
+  document.getElementById('step-confirm').style.display = 'none';
+  document.getElementById('step-participants').style.display = 'block';
+}
+
+// ── Crear evento ──────────────────────────────────────────
+async function createEvent() {
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Creando evento...';
+
+  const names = getParticipantNames();
+  const payload = {
+    eventName: document.getElementById('event-name').value.trim(),
+    deliveryDate: document.getElementById('event-date').value || null,
+    maxAmount: document.getElementById('event-amount').value || null,
+    participants: names.map(n => ({ name: n })),
+  };
 
   try {
-    const {data, error} = await _sb.from(TABLE)
-      .select('destinatario_enc,pin_hash,visto')
-      .eq('id', id)
-      .single();
+    const res = await fetch(`${EDGE_BASE}/create-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
 
-    if(error || !data){
-      document.getElementById('pin-err').textContent = 'Error de conexión. Intenta de nuevo.';
-      pinReset(); return;
-    }
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
 
-    // Verificar PIN con PBKDF2 (200k iteraciones)
-    const pinHash = await pbkdf2Hash(_pinBuffer);
-    if(pinHash !== data.pin_hash){
-      _intentosFallidos[id] = (_intentosFallidos[id] || 0) + 1;
-      const restantes = MAX_INTENTOS - _intentosFallidos[id];
-      if(restantes <= 0){
-        _bloqueadoHasta[id] = Date.now() + BLOQUEO_MS;
-        _intentosFallidos[id] = 0;
-        document.getElementById('pin-err').textContent = 'Demasiados intentos. Bloqueado 5 min.';
-      } else {
-        document.getElementById('pin-err').textContent = `PIN incorrecto. ${restantes} intento${restantes===1?'':'s'} restante${restantes===1?'':'s'}.`;
-      }
-      pinReset(); return;
-    }
+    // Guardar para la siguiente pantalla
+    pendingAdminPin = data.adminPin;
+    showCreatedPage(data);
 
-    // PIN correcto — resetear contador
-    _intentosFallidos[id] = 0;
-
-    // Descifrar destinatario con el PIN como clave
-    const destinatario = await descifrar(data.destinatario_enc, _pinBuffer);
-    if(!destinatario){
-      document.getElementById('pin-err').textContent = 'Error al descifrar. Contacta al organizador.';
-      pinReset(); return;
-    }
-
-    // Marcar como visto si es primera vez
-    if(!data.visto){
-      await _sb.from(TABLE).update({visto: true}).eq('id', id);
-      _dbRows[id] = { ..._dbRows[id], visto: true };
-      renderNameGrid();
-    }
-
-    mostrarReveal(destinatario);
-  } catch(e){
-    document.getElementById('pin-err').textContent = 'Error inesperado.';
-    pinReset();
+  } catch (e) {
+    alert('No se pudo crear el evento: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '🎁 Crear evento y generar PINs';
   }
 }
 
-// ═══════════════════════════════════════
-// REVEAL
-// ═══════════════════════════════════════
-function mostrarReveal(destinatario){
-  document.getElementById('reveal-mission').textContent = `¡Tu misión navideña comienza ahora! Toca el regalo 🎁`;
-  document.getElementById('result-name').textContent = destinatario;
-  document.getElementById('result-wrap').classList.remove('show');
-  document.getElementById('gift-box').className = 'gift-box';
-  document.getElementById('gift-box').style.display = '';
-  document.getElementById('gift-wrap').style.pointerEvents = '';
-  showView('v-reveal');
+function showCreatedPage(data) {
+  const baseUrl = location.origin + location.pathname;
+  const eventUrl = `${baseUrl}#/e/${data.eventCode}`;
+
+  document.getElementById('event-link-display').textContent = eventUrl;
+  document.getElementById('admin-pin-display').textContent = data.adminPin;
+
+  const table = document.getElementById('pins-table');
+  table.innerHTML = `<tr>
+    <th>Participante</th>
+    <th>PIN</th>
+  </tr>` + data.participants.map(p => `
+    <tr>
+      <td>${p.name}</td>
+      <td><span class="pin-badge">${p.pin}</span></td>
+    </tr>`).join('');
+
+  // Guardar datos del evento para el botón "ir a admin"
+  currentEventCode = data.eventCode;
+
+  goTo('page-created');
 }
 
-function abrirRegalo(){
-  const box = document.getElementById('gift-box');
-  const wrap = document.getElementById('gift-wrap');
-  wrap.style.pointerEvents = 'none';
-  box.classList.add('opening');
-
-  // Partículas
-  lanzarParticulas();
-
-  setTimeout(() => {
-    box.style.display = 'none';
-    document.getElementById('reveal-mission').textContent = '';
-    document.getElementById('result-wrap').classList.add('show');
-  }, 500);
+function copyEventLink() {
+  const link = document.getElementById('event-link-display').textContent;
+  copyToClipboard(link, '¡Link copiado!');
 }
 
-function lanzarParticulas(){
-  const card = document.getElementById('reveal-card');
-  const emojis = ['🎊','🎉','⭐','🌟','✨','🎈','❄️','🎁'];
-  for(let i=0;i<12;i++){
+function goToAdmin() {
+  location.hash = `#/e/${currentEventCode}/admin`;
+}
+
+function copyAllPins() {
+  const eventName = document.getElementById('event-name').value.trim();
+  const baseUrl = location.origin + location.pathname;
+  const eventUrl = `${baseUrl}#/e/${currentEventCode}`;
+  const adminPin = document.getElementById('admin-pin-display').textContent;
+
+  const rows = Array.from(document.querySelectorAll('#pins-table tr')).slice(1);
+  let msg = `🎄 *${eventName}* 🎄\n\n`;
+  msg += `🔗 Link del evento:\n${eventUrl}\n\n`;
+  msg += `🔐 *PINs individuales* (envía cada uno por privado):\n`;
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    msg += `• ${cells[0].textContent}: *${cells[1].querySelector('.pin-badge').textContent}*\n`;
+  });
+  msg += `\n⚙️ Tu PIN admin: *${adminPin}* (guárdalo solo tú)\n`;
+  msg += `\n¡Que lo pase bonito todo el mundo! 🎁`;
+
+  copyToClipboard(msg, '¡Copiado! Pégalo en WhatsApp');
+}
+
+// ══════════════════════════════════════════════════════════
+// EVENTO: VISTA PARTICIPANTE
+// ══════════════════════════════════════════════════════════
+async function loadEventPage() {
+  goTo('page-event');
+  document.getElementById('event-title-display').textContent = '...';
+  document.getElementById('names-grid').innerHTML = '<div style="color:#888;font-size:.9rem">Cargando participantes...</div>';
+
+  try {
+    // Cargar datos del evento y participantes
+    const { data: events } = await sb
+      .from('public_events')
+      .select('*')
+      .eq('code', currentEventCode)
+      .maybeSingle();
+
+    if (!events) {
+      document.getElementById('event-title-display').textContent = 'Evento no encontrado';
+      document.getElementById('names-grid').innerHTML = '<div class="alert alert-err">No existe ningún evento con ese código. Revisa el link.</div>';
+      return;
+    }
+
+    currentEventData = events;
+    document.getElementById('event-title-display').textContent = events.name;
+
+    let meta = '';
+    if (events.delivery_date) meta += `📅 Entrega: ${formatDate(events.delivery_date)}`;
+    if (events.max_amount) meta += (meta ? ' · ' : '') + `💰 Máx: $${Number(events.max_amount).toLocaleString('es-CL')}`;
+    document.getElementById('event-meta-display').textContent = meta;
+
+    const { data: participants } = await sb
+      .from('public_participants')
+      .select('id, name')
+      .eq('event_id', events.id)
+      .order('name');
+
+    const grid = document.getElementById('names-grid');
+    grid.innerHTML = '';
+    participants.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'name-btn';
+      btn.textContent = p.name;
+      btn.onclick = () => selectName(p, btn);
+      grid.appendChild(btn);
+    });
+
+  } catch (e) {
+    document.getElementById('names-grid').innerHTML = `<div class="alert alert-err">Error al cargar el evento: ${e.message}</div>`;
+  }
+}
+
+function selectName(participant, btn) {
+  document.querySelectorAll('.name-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedParticipant = participant;
+  document.getElementById('btn-go-pin').style.display = 'flex';
+  document.getElementById('name-select-error').style.display = 'none';
+}
+
+function goToPin() {
+  if (!selectedParticipant) return;
+  if (!currentEventData?.drawn) {
+    document.getElementById('name-select-error').textContent = 'El sorteo todavía no se ha realizado. Espera que el organizador lo haga.';
+    document.getElementById('name-select-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('pin-card-title').textContent = `🔐 Hola, ${selectedParticipant.name.split(' ')[0]}`;
+  document.getElementById('card-name-select').style.display = 'none';
+  document.getElementById('card-pin-input').style.display = 'block';
+  pinBuffer = '';
+  renderPinDots();
+}
+
+function backToNames() {
+  document.getElementById('card-pin-input').style.display = 'none';
+  document.getElementById('card-name-select').style.display = 'block';
+  document.getElementById('pin-error').style.display = 'none';
+  pinBuffer = '';
+}
+
+// ── Teclado PIN ───────────────────────────────────────────
+function keyPress(d) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  renderPinDots();
+  if (pinBuffer.length === 4) verifyPin();
+}
+
+function keyDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  renderPinDots();
+}
+
+function renderPinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.toggle('active', i === pinBuffer.length);
+    dot.textContent = i < pinBuffer.length ? '●' : '•';
+  }
+}
+
+async function verifyPin() {
+  const errEl = document.getElementById('pin-error');
+  errEl.style.display = 'none';
+
+  // Deshabilitar teclado mientras verifica
+  document.querySelectorAll('.keypad .key').forEach(k => k.disabled = true);
+
+  try {
+    const res = await fetch(`${EDGE_BASE}/verify-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({
+        eventCode: currentEventCode,
+        participantId: selectedParticipant.id,
+        pin: pinBuffer,
+      }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      errEl.textContent = data.error || 'PIN incorrecto';
+      errEl.style.display = 'block';
+      pinBuffer = '';
+      renderPinDots();
+      // Vibrar en móvil
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      return;
+    }
+
+    // ¡PIN correcto!
+    showReveal(data.assigneeName);
+
+  } catch (e) {
+    errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+    errEl.style.display = 'block';
+    pinBuffer = '';
+    renderPinDots();
+  } finally {
+    document.querySelectorAll('.keypad .key').forEach(k => k.disabled = false);
+  }
+}
+
+function showReveal(assigneeName) {
+  document.getElementById('card-pin-input').style.display = 'none';
+  document.getElementById('card-reveal').style.display = 'block';
+  const firstName = selectedParticipant.name.split(' ')[0];
+  document.getElementById('reveal-greeting').textContent = `¡Hola ${firstName}! 👋 Toca el regalo para descubrir tu amigo secreto.`;
+  // Guardar nombre para cuando toquen el regalo
+  document.getElementById('gift-box').dataset.assignee = assigneeName;
+}
+
+function openGift() {
+  const assigneeName = document.getElementById('gift-box').dataset.assignee;
+  if (!assigneeName) return;
+
+  document.getElementById('gift-box').textContent = '🎊';
+  document.getElementById('tap-hint').style.display = 'none';
+  document.getElementById('gift-box').style.cursor = 'default';
+  document.getElementById('gift-box').style.animation = 'none';
+  document.getElementById('reveal-result').style.display = 'block';
+  document.getElementById('reveal-name').textContent = assigneeName;
+
+  launchConfetti();
+}
+
+// ══════════════════════════════════════════════════════════
+// PANEL ADMIN
+// ══════════════════════════════════════════════════════════
+let adminVerifiedPin = '';
+let adminEventId = '';
+
+async function loadAdminPage() {
+  goTo('page-admin');
+
+  // Cargar nombre del evento
+  const { data: ev } = await sb
+    .from('public_events')
+    .select('id, name, drawn')
+    .eq('code', currentEventCode)
+    .maybeSingle();
+
+  if (!ev) {
+    document.getElementById('admin-event-name').textContent = 'Evento no encontrado';
+    return;
+  }
+
+  currentEventData = ev;
+  adminEventId = ev.id;
+  document.getElementById('admin-event-name').textContent = ev.name;
+  adminPinBuffer = '';
+  renderAdminPinDots();
+
+  // Si venimos recién de crear el evento, tenemos el PIN admin
+  if (pendingAdminPin) {
+    // Auto-autenticar
+    adminVerifiedPin = pendingAdminPin;
+    pendingAdminPin = '';
+    showAdminPanel();
+    await loadAdminParticipants();
+  }
+}
+
+function adminKeyPress(d) {
+  if (adminPinBuffer.length >= 4) return;
+  adminPinBuffer += d;
+  renderAdminPinDots();
+  if (adminPinBuffer.length === 4) verifyAdminPin();
+}
+
+function adminKeyDel() {
+  adminPinBuffer = adminPinBuffer.slice(0, -1);
+  renderAdminPinDots();
+}
+
+function renderAdminPinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById(`adot-${i}`);
+    dot.classList.toggle('filled', i < adminPinBuffer.length);
+    dot.classList.toggle('active', i === adminPinBuffer.length);
+    dot.textContent = i < adminPinBuffer.length ? '●' : '•';
+  }
+}
+
+async function verifyAdminPin() {
+  const errEl = document.getElementById('admin-pin-error');
+  errEl.style.display = 'none';
+  document.querySelectorAll('#card-admin-login .key').forEach(k => k.disabled = true);
+
+  try {
+    const res = await fetch(`${EDGE_BASE}/verify-admin-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ eventCode: currentEventCode, adminPin: adminPinBuffer }),
+    });
+    const data = await res.json();
+
+    if (res.status === 401 || res.status === 429 || !data.ok) {
+      errEl.textContent = data.error || 'PIN incorrecto';
+      errEl.style.display = 'block';
+      adminPinBuffer = '';
+      renderAdminPinDots();
+      if (res.status === 401 && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      return;
+    }
+
+    // PIN correcto
+    adminVerifiedPin = adminPinBuffer;
+    if (data.drawn !== undefined) {
+      currentEventData = { ...currentEventData, drawn: data.drawn };
+    }
+    showAdminPanel();
+    await loadAdminParticipants();
+
+  } catch (e) {
+    errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+    errEl.style.display = 'block';
+    adminPinBuffer = '';
+    renderAdminPinDots();
+  } finally {
+    document.querySelectorAll('#card-admin-login .key').forEach(k => k.disabled = false);
+  }
+}
+
+function showAdminPanel() {
+  document.getElementById('card-admin-login').style.display = 'none';
+  document.getElementById('card-admin-panel').style.display = 'block';
+
+  const baseUrl = location.origin + location.pathname;
+  const eventUrl = `${baseUrl}#/e/${currentEventCode}`;
+  document.getElementById('admin-event-link').textContent = eventUrl;
+
+  if (currentEventData?.drawn) {
+    document.getElementById('admin-not-drawn').style.display = 'none';
+    document.getElementById('admin-drawn-ok').style.display = 'block';
+    document.getElementById('admin-draw-status').textContent = '✅ Sorteo realizado';
+  } else {
+    document.getElementById('admin-not-drawn').style.display = 'block';
+    document.getElementById('admin-drawn-ok').style.display = 'none';
+    document.getElementById('admin-draw-status').textContent = '⏳ Sorteo pendiente';
+  }
+}
+
+async function loadAdminParticipants() {
+  const { data: participants } = await sb
+    .from('public_participants')
+    .select('id, name')
+    .eq('event_id', adminEventId)
+    .order('name');
+
+  const list = document.getElementById('admin-participants-list');
+  list.innerHTML = participants.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:#f9fafb;
+      border:1.5px solid #eee;border-radius:10px;padding:10px 14px">
+      <span style="color:#ccc;font-size:.82rem;min-width:20px">${i+1}.</span>
+      <span style="font-weight:600;font-size:.95rem">${p.name}</span>
+    </div>`).join('');
+}
+
+function confirmDraw() {
+  document.getElementById('modal-draw').classList.add('open');
+  document.getElementById('btn-confirm-draw').onclick = performDraw;
+}
+
+function closeModal() {
+  document.getElementById('modal-draw').classList.remove('open');
+}
+
+async function performDraw() {
+  const btn = document.getElementById('btn-confirm-draw');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sorteando...';
+  closeModal();
+
+  try {
+    const res = await fetch(`${EDGE_BASE}/draw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ eventCode: currentEventCode, adminPin: adminVerifiedPin }),
+    });
+    const data = await res.json();
+
+    if (!data.ok && res.status !== 409) throw new Error(data.error);
+
+    currentEventData = { ...currentEventData, drawn: true };
+    document.getElementById('admin-not-drawn').style.display = 'none';
+    document.getElementById('admin-drawn-ok').style.display = 'block';
+    document.getElementById('admin-draw-status').textContent = '✅ Sorteo realizado';
+    launchConfetti();
+
+  } catch (e) {
+    alert('Error al sortear: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🎲 Realizar sorteo';
+  }
+}
+
+function adminCopyLink() {
+  const link = document.getElementById('admin-event-link').textContent;
+  copyToClipboard(link, '¡Link copiado!');
+}
+
+// ══════════════════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════════════════
+function launchConfetti() {
+  const wrap = document.getElementById('confetti');
+  wrap.innerHTML = '';
+  const colors = ['#D4AF37','#C0392B','#2ecc71','#3498db','#e74c3c','#f39c12','#fff'];
+  for (let i = 0; i < 80; i++) {
     const p = document.createElement('div');
-    p.className = 'particle';
-    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    const angle = (Math.random()*360) * Math.PI/180;
-    const dist = 80+Math.random()*120;
-    p.style.cssText = `
-      left:50%;top:50%;
-      --tx:${Math.cos(angle)*dist}px;
-      --ty:${Math.sin(angle)*dist}px;
-      animation-delay:${Math.random()*.3}s;
-      animation-duration:${.6+Math.random()*.4}s;
-    `;
-    card.appendChild(p);
-    setTimeout(()=>p.remove(), 1200);
+    p.className = 'confetti-piece';
+    const c = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText = `left:${Math.random()*100}%;background:${c};
+      --cf-dur:${2+Math.random()*2}s;--cf-del:${Math.random()*.8}s;
+      transform:rotate(${Math.random()*360}deg);
+      width:${6+Math.random()*6}px;height:${10+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'}`;
+    wrap.appendChild(p);
+  }
+  setTimeout(() => wrap.innerHTML = '', 4000);
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILIDADES
+// ══════════════════════════════════════════════════════════
+function copyToClipboard(text, msg) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast(msg));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(msg);
   }
 }
 
-// ═══════════════════════════════════════
-// CRIPTO — PBKDF2 y AES-GCM
-// ═══════════════════════════════════════
-
-// PBKDF2 para verificación de PIN (200k iteraciones, salt distinto al de cifrado)
-async function pbkdf2Hash(pin){
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']
-  );
-  const key = await crypto.subtle.deriveKey(
-    {name:'PBKDF2', salt:new TextEncoder().encode('amigo-secreto-pin-verify'), iterations:200000, hash:'SHA-256'},
-    keyMaterial, {name:'AES-GCM', length:256}, true, ['encrypt']
-  );
-  const raw = await crypto.subtle.exportKey('raw', key);
-  return Array.from(new Uint8Array(raw)).map(b=>b.toString(16).padStart(2,'0')).join('');
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#1e6b30;color:#fff;padding:12px 24px;border-radius:50px;
+    font-weight:700;font-size:.9rem;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3);
+    animation:fadeInUp .3s ease`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
 }
 
-// PBKDF2 para descifrado (100k iteraciones, salt de cifrado)
-async function getKey(pin){
-  const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin.padEnd(16,'0')), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2', salt:new TextEncoder().encode('amigo-secreto-2026'), iterations:100000, hash:'SHA-256'},
-    keyMaterial, {name:'AES-GCM', length:256}, false, ['decrypt']
-  );
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-async function descifrar(enc_b64, pin){
-  try {
-    const bytes = Uint8Array.from(atob(enc_b64), c=>c.charCodeAt(0));
-    const iv = bytes.slice(0,12);
-    const data = bytes.slice(12);
-    const key = await getKey(pin);
-    const dec = await crypto.subtle.decrypt({name:'AES-GCM',iv}, key, data);
-    return new TextDecoder().decode(dec);
-  } catch(e){ return null; }
-}
-
-// ═══════════════════════════════════════
-// DECORACIÓN
-// ═══════════════════════════════════════
-function renderStars(){
-  const container = document.getElementById('stars');
-  for(let i=0;i<80;i++){
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--op:${.3+Math.random()*.7}`;
-    container.appendChild(s);
-  }
-}
-
-function renderSnow(){
-  const container = document.getElementById('snow');
-  const flakes = ['❄','❅','❆','·','*'];
-  for(let i=0;i<25;i++){
-    const f = document.createElement('div');
-    f.className = 'flake';
-    f.textContent = flakes[Math.floor(Math.random()*flakes.length)];
-    f.style.cssText = `--left:${Math.random()*100}%;--sz:${10+Math.random()*14}px;--dur:${6+Math.random()*10}s;--del:${-Math.random()*10}s`;
-    container.appendChild(f);
-  }
-}
-
-function renderLights(){
-  const container = document.getElementById('lights');
-  const colors = ['r','g','y','b'];
-  const count = Math.floor(window.innerWidth / 32);
-  for(let i=0;i<count;i++){
-    const b = document.createElement('div');
-    b.className = `bulb ${colors[i%colors.length]}`;
-    b.style.cssText = `--gd:${1.5+Math.random()*2}s;--go:${Math.random()*2}s`;
-    container.appendChild(b);
-  }
-}
+// ── Estilo toast ──────────────────────────────────────────
+const style = document.createElement('style');
+style.textContent = `@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>

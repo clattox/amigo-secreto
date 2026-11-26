@@ -1,115 +1,126 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from "npm:@supabase/supabase-js@2";
 import {
+  corsHeaders,
   generateCode,
   generatePin,
   generateSalt,
   pbkdf2Hash,
-  sha256,
-  corsHeaders,
-} from '../_shared/crypto.ts'
+} from "../_shared/crypto.ts";
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { eventName, deliveryDate, maxAmount, participants } = await req.json()
+    const { eventName, deliveryDate, maxAmount, participants } = await req.json();
 
+    // ── Validaciones ────────────────────────────────────
     if (!eventName?.trim()) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'El nombre del evento es obligatorio' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return err(400, "Falta el nombre del evento");
     }
     if (!Array.isArray(participants) || participants.length < 3) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Se necesitan al menos 3 participantes' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return err(400, "Se necesitan al menos 3 participantes para el sorteo");
     }
     if (participants.length > 100) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Máximo 100 participantes' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return err(400, "El máximo es 100 participantes por evento");
     }
 
-    const names = participants.map((p: any) => p.name?.trim()).filter(Boolean)
-    if (new Set(names).size !== names.length) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Hay nombres duplicados' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Verificar nombres únicos
+    const names: string[] = participants.map((p: { name: string }) => p.name?.trim()).filter(Boolean);
+    if (names.length !== participants.length) {
+      return err(400, "Todos los participantes deben tener nombre");
+    }
+    const uniqueNames = new Set(names);
+    if (uniqueNames.size !== names.length) {
+      return err(400, "Hay nombres repetidos en la lista");
     }
 
+    // ── Supabase (service_role) ─────────────────────────
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // Generar código único
-    let code = ''
-    for (let i = 0; i < 10; i++) {
-      const candidate = generateCode(6)
-      const { data } = await supabase.from('events').select('id').eq('code', candidate).maybeSingle()
-      if (!data) { code = candidate; break }
-    }
-    if (!code) throw new Error('No se pudo generar código único')
+    // ── Generar código único de evento ──────────────────
+    let code: string;
+    let codeExists = true;
+    let attempts = 0;
+    do {
+      code = generateCode(6);
+      const { data } = await supabase
+        .from("events")
+        .select("id")
+        .eq("code", code)
+        .maybeSingle();
+      codeExists = !!data;
+      if (++attempts > 10) throw new Error("No se pudo generar código único");
+    } while (codeExists);
 
-    // PIN admin
-    const adminPin = generatePin()
-    const adminSalt = generateSalt()
-    const adminHash = await pbkdf2Hash(adminPin, adminSalt, 200_000)
+    // ── PIN admin ───────────────────────────────────────
+    const adminPin = generatePin();
+    const adminSalt = generateSalt();
+    const adminPinHash = await pbkdf2Hash(adminPin, adminSalt, 200_000);
 
-    // Crear evento
-    const { data: event, error: eventError } = await supabase
-      .from('events')
+    // ── PINs de participantes ───────────────────────────
+    const participantData = await Promise.all(
+      names.map(async (name) => {
+        const pin = generatePin();
+        const pinSalt = generateSalt();
+        const pinHash = await pbkdf2Hash(pin, pinSalt, 200_000);
+        return { name, pin, pinHash, pinSalt };
+      })
+    );
+
+    // ── Insertar evento ─────────────────────────────────
+    const { data: event, error: eventErr } = await supabase
+      .from("events")
       .insert({
         code,
         name: eventName.trim(),
         delivery_date: deliveryDate || null,
         max_amount: maxAmount ? parseInt(maxAmount) : null,
-        admin_pin_hash: adminHash,
+        admin_pin_hash: adminPinHash,
         admin_pin_salt: adminSalt,
       })
-      .select('id')
-      .single()
+      .select("id")
+      .single();
 
-    if (eventError) throw eventError
+    if (eventErr) throw eventErr;
 
-    // Crear participantes con PINs
-    const participantResults = []
-    for (const name of names) {
-      const pin = generatePin()
-      const salt = generateSalt()
-      const hash = await pbkdf2Hash(pin, salt, 200_000)
-      const { error } = await supabase.from('participants').insert({
+    // ── Insertar participantes ──────────────────────────
+    const { error: partErr } = await supabase.from("participants").insert(
+      participantData.map(({ name, pinHash, pinSalt }) => ({
         event_id: event.id,
         name,
-        pin_hash: hash,
-        pin_salt: salt,
-      })
-      if (error) throw error
-      participantResults.push({ name, pin })
-    }
+        pin_hash: pinHash,
+        pin_salt: pinSalt,
+      }))
+    );
 
+    if (partErr) throw partErr;
+
+    // ── Respuesta: PINs en texto claro UNA SOLA VEZ ────
+    // Después de esta respuesta, los PINs no se pueden recuperar.
     return new Response(
       JSON.stringify({
         ok: true,
         eventCode: code,
         eventId: event.id,
         adminPin,
-        participants: participantResults,
+        participants: participantData.map(({ name, pin }) => ({ name, pin })),
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (err) {
-    console.error('create-event error:', err)
-    return new Response(
-      JSON.stringify({ ok: false, error: 'Error interno del servidor' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (e) {
+    console.error("[create-event]", e);
+    return err(500, "Algo salió mal. Intenta de nuevo.");
   }
-})
+});
+
+function err(status: number, message: string) {
+  return new Response(JSON.stringify({ ok: false, error: message }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
