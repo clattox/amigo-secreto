@@ -240,10 +240,39 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .gap-2{gap:8px}
 .w-full{width:100%}
 .divider{border:none;border-top:1.5px solid #eee;margin:16px 0}
+/* ── CLAUNET ADMIN ───────────────────────────────────── */
+.ca-login{max-width:360px;margin:0 auto;padding:2rem 1rem}
+.ca-logo{text-align:center;margin-bottom:1.5rem}
+.ca-logo img{width:60px}
+.ca-logo h2{font-size:1.4rem;color:var(--gold);margin-top:.5rem}
+.ca-logo p{font-size:.85rem;color:rgba(255,255,255,.5)}
+.ca-input{width:100%;padding:.75rem 1rem;border-radius:12px;border:2px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.07);color:#fff;font-size:1rem;font-family:var(--font);margin-bottom:.75rem}
+.ca-input:focus{outline:none;border-color:var(--gold)}
+.ca-step{display:none}.ca-step.active{display:block}
+.ca-table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:1rem}
+.ca-table th{background:rgba(255,255,255,.08);color:var(--gold);padding:.5rem .75rem;text-align:left;font-weight:700}
+.ca-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+.ca-table tr:hover td{background:rgba(255,255,255,.04)}
+.ca-badge-drawn{background:#1e6b30;color:#fff;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700}
+.ca-badge-pending{background:#555;color:#fff;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700}
+.ca-btn-sm{padding:4px 12px;font-size:.8rem;border-radius:8px;border:none;cursor:pointer;font-family:var(--font);font-weight:700}
+.ca-btn-danger{background:#C0392B;color:#fff}
+.ca-btn-info{background:var(--green);color:#fff}
+.ca-section{background:rgba(255,255,255,.05);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.ca-section h3{color:var(--gold);font-size:1rem;margin-bottom:.75rem}
+.ca-totp-box{text-align:center;padding:1rem}
+#ca-qr{display:inline-block;background:#fff;padding:12px;border-radius:12px;margin:1rem auto}
+.ca-stat{display:inline-block;background:rgba(255,255,255,.08);border-radius:12px;padding:.5rem 1rem;
+  margin:.25rem;text-align:center;min-width:80px}
+.ca-stat-num{font-size:1.5rem;font-weight:900;color:var(--gold2)}
+.ca-stat-label{font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase}
 .badge-event{display:inline-block;background:linear-gradient(135deg,var(--green),#0a3d14);
   color:#fff;border-radius:50px;padding:4px 14px;font-size:.8rem;font-weight:700;
   letter-spacing:1px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/otpauth@9.3.6/dist/otpauth.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -592,6 +621,108 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
     </div>
   </div>
 
+  <!-- ══ CLAUNET ADMIN ══════════════════════════════════ -->
+  <div class="page" id="page-claunet-admin">
+    <div style="max-width:700px;margin:0 auto;padding:1rem">
+
+      <!-- LOGIN PASO 1: contraseña -->
+      <div id="ca-step-pass" class="ca-step active">
+        <div class="ca-login">
+          <div class="ca-logo">
+            <div style="font-size:2.5rem">🔐</div>
+            <h2>ClauNet Admin</h2>
+            <p>Acceso restringido</p>
+          </div>
+          <input class="ca-input" type="password" id="ca-pass" placeholder="Contraseña"
+            onkeydown="if(event.key==='Enter')caCheckPass()">
+          <button class="btn btn-primary" style="width:100%" onclick="caCheckPass()">Continuar →</button>
+          <div id="ca-pass-err" class="alert alert-err mt-2" style="display:none">Contraseña incorrecta</div>
+        </div>
+      </div>
+
+      <!-- LOGIN PASO 2: TOTP -->
+      <div id="ca-step-totp" class="ca-step">
+        <div class="ca-login">
+          <div class="ca-logo">
+            <div style="font-size:2.5rem">📱</div>
+            <h2>Verificación 2FA</h2>
+            <p>Código de Google Authenticator</p>
+          </div>
+          <input class="ca-input" type="text" id="ca-totp-code" placeholder="000000"
+            maxlength="6" inputmode="numeric"
+            onkeydown="if(event.key==='Enter')caCheckTotp()">
+          <button class="btn btn-primary" style="width:100%" onclick="caCheckTotp()">Entrar →</button>
+          <div id="ca-totp-err" class="alert alert-err mt-2" style="display:none">Código incorrecto</div>
+        </div>
+      </div>
+
+      <!-- SETUP TOTP (primera vez) -->
+      <div id="ca-step-setup" class="ca-step">
+        <div class="ca-login" style="max-width:420px">
+          <div class="ca-logo">
+            <div style="font-size:2.5rem">⚙️</div>
+            <h2>Configurar 2FA</h2>
+            <p>Escanea este QR con Google Authenticator</p>
+          </div>
+          <div class="ca-totp-box">
+            <div id="ca-qr"></div>
+            <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.5rem">
+              O ingresa el código manual: <code id="ca-secret-text" style="color:var(--gold)"></code>
+            </p>
+          </div>
+          <p style="font-size:.85rem;text-align:center;margin-bottom:1rem">
+            Luego ingresa el código de 6 dígitos para confirmar:
+          </p>
+          <input class="ca-input" type="text" id="ca-setup-code" placeholder="000000"
+            maxlength="6" inputmode="numeric"
+            onkeydown="if(event.key==='Enter')caConfirmSetup()">
+          <button class="btn btn-primary" style="width:100%" onclick="caConfirmSetup()">Confirmar y guardar →</button>
+          <div id="ca-setup-err" class="alert alert-err mt-2" style="display:none">Código incorrecto, inténtalo de nuevo</div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="ca-step-dashboard" class="ca-step">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div>
+            <div style="font-size:1.3rem;font-weight:900;color:var(--gold)">🎄 Amigo Secreto</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.4)">Panel ClauNet</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="caLogout()">Salir</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="ca-section" id="ca-stats-box" style="text-align:center">
+          <div class="ca-stat"><div class="ca-stat-num" id="ca-stat-total">-</div><div class="ca-stat-label">Eventos</div></div>
+          <div class="ca-stat"><div class="ca-stat-num" id="ca-stat-drawn">-</div><div class="ca-stat-label">Sorteados</div></div>
+          <div class="ca-stat"><div class="ca-stat-num" id="ca-stat-parts">-</div><div class="ca-stat-label">Participantes</div></div>
+        </div>
+
+        <!-- Tabla eventos -->
+        <div class="ca-section">
+          <h3>Todos los eventos</h3>
+          <div id="ca-events-loading" style="text-align:center;padding:1rem;color:rgba(255,255,255,.4)">Cargando...</div>
+          <div style="overflow-x:auto">
+            <table class="ca-table" id="ca-events-table" style="display:none">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Código</th>
+                  <th>Entrega</th>
+                  <th>Partic.</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="ca-events-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <script>
@@ -658,6 +789,7 @@ function route() {
   const hash = location.hash || '#/';
   if (hash === '#/' || hash === '') return goTo('page-home');
   if (hash === '#/organizar') return goTo('page-create');
+  if (hash === '#/claunet-admin') return goTo('page-claunet-admin');
 
   const matchEvent = hash.match(/^#\/e\/([A-Z0-9]{4,8})(?:\/admin)?$/i);
   if (matchEvent) {
@@ -1291,6 +1423,165 @@ function formatDate(dateStr) {
 const style = document.createElement('style');
 style.textContent = `@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`;
 document.head.appendChild(style);
+
+// ══════════════════════════════════════════════════════════
+// CLAUNET ADMIN
+// ══════════════════════════════════════════════════════════
+let caTotpSecret = null;
+let caAuthenticated = false;
+
+function caShowStep(id) {
+  document.querySelectorAll('.ca-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function caCheckPass() {
+  const pass = document.getElementById('ca-pass').value;
+  const err = document.getElementById('ca-pass-err');
+  if (!pass) return;
+  // Validar contraseña en el servidor
+  const r = await fetch(`${EDGE_BASE}/claunet-admin-totp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ action: 'check_pass', pass })
+  });
+  const data = await r.json();
+  if (!data.ok) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  document.getElementById('ca-pass').value = '';
+  caLoadTotp();
+}
+
+async function caLoadTotp() {
+  // Llama Edge Function con service_role para leer el secret
+  try {
+    const r = await fetch(`${EDGE_BASE}/claunet-admin-totp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ action: 'get_secret' })
+    });
+    const data = await r.json();
+    if (data.secret) {
+      caTotpSecret = data.secret;
+      caShowStep('ca-step-totp');
+      setTimeout(() => document.getElementById('ca-totp-code').focus(), 100);
+    } else {
+      // Primera vez: generar secret
+      caGenerateSetup();
+    }
+  } catch(e) {
+    alert('Error conectando con el servidor');
+  }
+}
+
+async function caGenerateSetup() {
+  // Generar secret nuevo
+  const secret = new OTPAuth.Secret({ size: 20 });
+  caTotpSecret = secret.base32;
+  const totp = new OTPAuth.TOTP({
+    issuer: 'ClauNet',
+    label: 'AmigosecreTo Admin',
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: secret
+  });
+  caShowStep('ca-step-setup');
+  document.getElementById('ca-secret-text').textContent = caTotpSecret;
+  document.getElementById('ca-qr').innerHTML = '';
+  new QRCode(document.getElementById('ca-qr'), {
+    text: totp.toString(),
+    width: 180, height: 180,
+    colorDark: '#000000', colorLight: '#ffffff'
+  });
+  setTimeout(() => document.getElementById('ca-setup-code').focus(), 300);
+}
+
+async function caConfirmSetup() {
+  const code = document.getElementById('ca-setup-code').value.trim();
+  const err = document.getElementById('ca-setup-err');
+  const totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(caTotpSecret), digits: 6, period: 30 });
+  const delta = totp.validate({ token: code, window: 1 });
+  if (delta === null) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  // Guardar secret via Edge Function
+  const r = await fetch(`${EDGE_BASE}/claunet-admin-totp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ action: 'save_secret', secret: caTotpSecret })
+  });
+  const data = await r.json();
+  if (data.ok) {
+    caAuthenticated = true;
+    caShowStep('ca-step-dashboard');
+    caLoadDashboard();
+  } else {
+    alert('Error guardando configuración');
+  }
+}
+
+function caCheckTotp() {
+  const code = document.getElementById('ca-totp-code').value.trim();
+  const err = document.getElementById('ca-totp-err');
+  document.getElementById('ca-totp-code').value = '';
+  const totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(caTotpSecret), digits: 6, period: 30 });
+  const delta = totp.validate({ token: code, window: 1 });
+  if (delta === null) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  caAuthenticated = true;
+  caShowStep('ca-step-dashboard');
+  caLoadDashboard();
+}
+
+async function caLoadDashboard() {
+  const r = await fetch(`${EDGE_BASE}/claunet-admin-totp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ action: 'list_events' })
+  });
+  const data = await r.json();
+  if (!data.events) return;
+  const events = data.events;
+  document.getElementById('ca-stat-total').textContent = events.length;
+  document.getElementById('ca-stat-drawn').textContent = events.filter(e => e.drawn).length;
+  document.getElementById('ca-stat-parts').textContent = events.reduce((s, e) => s + (e.participant_count || 0), 0);
+  const tbody = document.getElementById('ca-events-body');
+  tbody.innerHTML = events.map(e => `
+    <tr>
+      <td><strong>${e.name}</strong></td>
+      <td><code style="color:var(--gold)">${e.code}</code></td>
+      <td style="font-size:.8rem">${e.delivery_date ? new Date(e.delivery_date).toLocaleDateString('es-CL') : '—'}</td>
+      <td style="text-align:center">${e.participant_count || 0}</td>
+      <td>${e.drawn ? '<span class="ca-badge-drawn">Sorteado</span>' : '<span class="ca-badge-pending">Pendiente</span>'}</td>
+      <td>
+        <button class="ca-btn-sm ca-btn-info" onclick="window.open('/#/e/${e.code}','_blank')">Ver</button>
+        <button class="ca-btn-sm ca-btn-danger" onclick="caDeleteEvent('${e.id}','${e.name}')" style="margin-left:4px">Eliminar</button>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('ca-events-loading').style.display = 'none';
+  document.getElementById('ca-events-table').style.display = 'table';
+}
+
+async function caDeleteEvent(id, name) {
+  if (!confirm(`¿Eliminar el evento "${name}"? Esta acción es irreversible.`)) return;
+  const r = await fetch(`${EDGE_BASE}/claunet-admin-totp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ action: 'delete_event', event_id: id })
+  });
+  const data = await r.json();
+  if (data.ok) { showToast('Evento eliminado'); caLoadDashboard(); }
+  else alert('Error eliminando evento');
+}
+
+function caLogout() {
+  caAuthenticated = false;
+  caTotpSecret = null;
+  caShowStep('ca-step-pass');
+  document.getElementById('ca-pass').value = '';
+  location.hash = '#/';
+}
 </script>
 </body>
 </html>
