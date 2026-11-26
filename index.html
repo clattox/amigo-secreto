@@ -495,6 +495,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
           <button class="key" onclick="keyPress('0')">0</button>
           <button class="key key-del" onclick="keyDel()">⌫</button>
         </div>
+        <button class="btn btn-primary mt-2" id="btn-enter-pin" onclick="verifyPin()" style="max-width:240px;width:100%;margin:0 auto;display:block">Entrar →</button>
         <div id="pin-error" class="alert alert-err mt-2" style="display:none"></div>
         <button class="btn btn-ghost mt-2 btn-sm" onclick="backToNames()">← Cambiar nombre</button>
       </div>
@@ -555,6 +556,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
           <button class="key" onclick="adminKeyPress('0')">0</button>
           <button class="key key-del" onclick="adminKeyDel()">⌫</button>
         </div>
+        <button class="btn btn-primary mt-2" id="btn-enter-admin-pin" onclick="verifyAdminPin()" style="max-width:240px;width:100%;margin:0 auto;display:block">Entrar →</button>
         <div id="admin-pin-error" class="alert alert-err mt-2" style="display:none"></div>
       </div>
     </div>
