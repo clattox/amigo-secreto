@@ -423,14 +423,28 @@ function updatePinDots(){
   });
 }
 
+// Rate limiting en memoria: máx 5 intentos por participante por sesión
+const _intentosFallidos = {};
+const MAX_INTENTOS = 5;
+const BLOQUEO_MS = 5 * 60 * 1000; // 5 minutos
+const _bloqueadoHasta = {};
+
 async function verificarPin(){
   if(!_selectedUser) return;
+  const id = _selectedUser.id;
   document.getElementById('pin-err').textContent = '';
+
+  // Verificar bloqueo temporal
+  if(_bloqueadoHasta[id] && Date.now() < _bloqueadoHasta[id]){
+    const mins = Math.ceil((_bloqueadoHasta[id] - Date.now()) / 60000);
+    document.getElementById('pin-err').textContent = `Demasiados intentos. Espera ${mins} min.`;
+    pinReset(); return;
+  }
 
   try {
     const {data, error} = await _sb.from(TABLE)
       .select('destinatario_enc,pin_hash,visto')
-      .eq('id', _selectedUser.id)
+      .eq('id', id)
       .single();
 
     if(error || !data){
@@ -438,12 +452,23 @@ async function verificarPin(){
       pinReset(); return;
     }
 
-    // Verificar PIN hasheado
-    const pinIngresado = await sha256(_pinBuffer);
-    if(pinIngresado !== data.pin_hash){
-      document.getElementById('pin-err').textContent = 'PIN incorrecto. Intenta de nuevo.';
+    // Verificar PIN con PBKDF2 (200k iteraciones)
+    const pinHash = await pbkdf2Hash(_pinBuffer);
+    if(pinHash !== data.pin_hash){
+      _intentosFallidos[id] = (_intentosFallidos[id] || 0) + 1;
+      const restantes = MAX_INTENTOS - _intentosFallidos[id];
+      if(restantes <= 0){
+        _bloqueadoHasta[id] = Date.now() + BLOQUEO_MS;
+        _intentosFallidos[id] = 0;
+        document.getElementById('pin-err').textContent = 'Demasiados intentos. Bloqueado 5 min.';
+      } else {
+        document.getElementById('pin-err').textContent = `PIN incorrecto. ${restantes} intento${restantes===1?'':'s'} restante${restantes===1?'':'s'}.`;
+      }
       pinReset(); return;
     }
+
+    // PIN correcto — resetear contador
+    _intentosFallidos[id] = 0;
 
     // Descifrar destinatario con el PIN como clave
     const destinatario = await descifrar(data.destinatario_enc, _pinBuffer);
@@ -454,8 +479,8 @@ async function verificarPin(){
 
     // Marcar como visto si es primera vez
     if(!data.visto){
-      await _sb.from(TABLE).update({visto: true}).eq('id', _selectedUser.id);
-      _dbRows[_selectedUser.id] = { ..._dbRows[_selectedUser.id], visto: true };
+      await _sb.from(TABLE).update({visto: true}).eq('id', id);
+      _dbRows[id] = { ..._dbRows[id], visto: true };
       renderNameGrid();
     }
 
@@ -517,13 +542,23 @@ function lanzarParticulas(){
 }
 
 // ═══════════════════════════════════════
-// CRIPTO — SHA-256 y AES-GCM
+// CRIPTO — PBKDF2 y AES-GCM
 // ═══════════════════════════════════════
-async function sha256(str){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+// PBKDF2 para verificación de PIN (200k iteraciones, salt distinto al de cifrado)
+async function pbkdf2Hash(pin){
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']
+  );
+  const key = await crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt:new TextEncoder().encode('amigo-secreto-pin-verify'), iterations:200000, hash:'SHA-256'},
+    keyMaterial, {name:'AES-GCM', length:256}, true, ['encrypt']
+  );
+  const raw = await crypto.subtle.exportKey('raw', key);
+  return Array.from(new Uint8Array(raw)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
+// PBKDF2 para descifrado (100k iteraciones, salt de cifrado)
 async function getKey(pin){
   const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin.padEnd(16,'0')), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey(
