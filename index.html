@@ -393,7 +393,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
         <div class="alert alert-warn mt-2">
           Al crear el evento, se generarán los PINs automáticamente. <strong>Guárdalos de inmediato</strong> porque no se pueden recuperar.
         </div>
-        <button class="btn btn-primary" id="btn-create" onclick="createEvent()">
+        <button class="btn btn-primary" id="btn-create" onclick="crearEvento()">
           🎁 Crear evento y generar PINs
         </button>
         <button class="btn btn-ghost mt-2" onclick="backToStep2()">← Volver</button>
@@ -793,7 +793,7 @@ function backToStep2() {
 }
 
 // ── Crear evento ──────────────────────────────────────────
-async function createEvent() {
+async function crearEvento() {
   const btn = document.getElementById('btn-create');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Creando evento...';
