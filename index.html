@@ -706,6 +706,15 @@ function goToStep2() {
     alert('Dale un nombre al evento po');
     return;
   }
+  const dateVal = document.getElementById('event-date').value;
+  if (dateVal) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const chosen = new Date(dateVal + 'T00:00:00');
+    if (chosen < today) {
+      alert('La fecha de entrega no puede ser en el pasado');
+      return;
+    }
+  }
   document.getElementById('step-event-data').style.display = 'none';
   document.getElementById('step-participants').style.display = 'block';
   if (document.getElementById('participants-list').children.length === 0) {
