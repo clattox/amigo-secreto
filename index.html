@@ -291,7 +291,8 @@ body.home-active #bg,
 body.create-active #bg,
 body.created-active #bg,
 body.admin-active #bg,
-body.event-active #bg{
+body.event-active #bg,
+body.claunet-admin-active #bg{
   background:
     radial-gradient(ellipse at 25% 0%,#0d2a5a 0%,transparent 55%),
     radial-gradient(ellipse at 75% 100%,#082040 0%,transparent 50%),
@@ -300,7 +301,8 @@ body.home-active #bg::after,
 body.create-active #bg::after,
 body.created-active #bg::after,
 body.admin-active #bg::after,
-body.event-active #bg::after{
+body.event-active #bg::after,
+body.claunet-admin-active #bg::after{
   background:
     radial-gradient(circle at 15% 20%,rgba(66,165,245,.12) 0%,transparent 45%),
     radial-gradient(circle at 85% 70%,rgba(30,136,229,.08) 0%,transparent 45%),
@@ -310,7 +312,8 @@ body.event-active #bg::after{
 body.create-active #lights,
 body.created-active #lights,
 body.admin-active #lights,
-body.event-active #lights{opacity:0;pointer-events:none;transition:opacity .4s ease}
+body.event-active #lights,
+body.claunet-admin-active #lights{opacity:0;pointer-events:none;transition:opacity .4s ease}
 /* Transición suave al aparecer/desaparecer */
 #lights{transition:opacity .4s ease}
 
@@ -849,46 +852,88 @@ body.event-active #lights{opacity:0;pointer-events:none;transition:opacity .4s e
   text-shadow:0 0 20px rgba(212,175,55,.4)}
 .ca-logo p{font-size:.82rem;color:var(--muted)}
 .ca-input{width:100%;padding:.75rem 1rem;border-radius:var(--r-sm);
-  border:2px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);color:#fff;font-size:1rem;
+  border:2px solid rgba(66,165,245,.18);
+  background:rgba(10,25,60,.45);color:#fff;font-size:1rem;
   font-family:var(--font);margin-bottom:.75rem;
   transition:border-color var(--ease),background var(--ease)}
-.ca-input:focus{outline:none;border-color:var(--gold);
-  background:rgba(255,255,255,.1)}
+.ca-input:focus{outline:none;border-color:var(--blue3);
+  background:rgba(10,25,60,.65)}
 .ca-step{display:none}.ca-step.active{display:block}
+
+/* Dashboard header */
+.ca-header{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1rem;padding:.85rem 1.1rem;
+  background:rgba(10,25,60,.55);border:1px solid rgba(66,165,245,.14);
+  border-radius:16px}
+.ca-header-brand{display:flex;align-items:center;gap:.6rem}
+.ca-header-brand svg{width:28px;height:28px;flex-shrink:0}
+.ca-header-title{font-size:1.1rem;font-weight:900;color:#fff;
+  font-family:var(--font-title);letter-spacing:-.3px;line-height:1.1}
+.ca-header-sub{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:1px}
+.ca-btn-salir{padding:6px 14px;font-size:.78rem;border-radius:10px;
+  border:1px solid rgba(66,165,245,.3);
+  background:rgba(66,165,245,.1);color:rgba(255,255,255,.8);
+  font-family:var(--font);font-weight:700;cursor:pointer;
+  transition:background var(--ease),border-color var(--ease)}
+.ca-btn-salir:hover{background:rgba(66,165,245,.2);border-color:rgba(66,165,245,.5)}
+
+/* Sections */
+.ca-section{background:rgba(10,25,60,.55);border:1px solid rgba(66,165,245,.12);
+  border-radius:18px;padding:1.3rem;margin-bottom:1.25rem}
+.ca-section h3{color:rgba(255,255,255,.75);font-size:.88rem;margin-bottom:.85rem;
+  font-weight:700;letter-spacing:.2px;text-transform:uppercase}
+
+/* Stats */
+.ca-stat{display:inline-block;background:rgba(13,71,161,.35);
+  border:1px solid rgba(66,165,245,.18);border-radius:14px;
+  padding:.6rem 1rem;margin:.25rem;text-align:center;min-width:80px}
+.ca-stat-num{font-size:1.6rem;font-weight:900;color:var(--gold2);line-height:1}
+.ca-stat-label{font-size:.68rem;color:rgba(255,255,255,.45);text-transform:uppercase;
+  letter-spacing:.5px;margin-top:4px}
+
+/* Table */
 .ca-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:1rem}
-.ca-table th{background:rgba(255,255,255,.07);color:var(--gold2);
-  padding:.55rem .75rem;text-align:left;font-weight:800;font-size:.75rem;
-  text-transform:uppercase;letter-spacing:.5px}
-.ca-table td{padding:.55rem .75rem;border-bottom:1px solid rgba(255,255,255,.06);
+.ca-table th{background:rgba(13,71,161,.4);color:rgba(255,255,255,.65);
+  padding:.55rem .75rem;text-align:left;font-weight:700;font-size:.74rem;
+  text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid rgba(66,165,245,.2)}
+.ca-table td{padding:.55rem .75rem;border-bottom:1px solid rgba(66,165,245,.08);
   vertical-align:middle;color:rgba(255,255,255,.85)}
-.ca-table tr:hover td{background:rgba(255,255,255,.04)}
-.ca-badge-drawn{background:var(--blue2);color:#fff;border-radius:20px;
+.ca-table tr:hover td{background:rgba(66,165,245,.05)}
+
+/* Badges */
+.ca-badge-drawn{background:rgba(21,101,192,.7);color:#90caf9;
+  border:1px solid rgba(66,165,245,.3);border-radius:20px;
   padding:2px 10px;font-size:.74rem;font-weight:700}
-.ca-badge-pending{background:rgba(255,255,255,.18);color:rgba(255,255,255,.7);
-  border-radius:20px;padding:2px 10px;font-size:.74rem;font-weight:700}
+.ca-badge-pending{background:rgba(55,65,90,.6);color:rgba(255,255,255,.5);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:2px 10px;font-size:.74rem;font-weight:700}
+
+/* Action buttons */
 .ca-btn-sm{padding:5px 12px;font-size:.79rem;border-radius:8px;border:none;
   cursor:pointer;font-family:var(--font);font-weight:700;transition:opacity var(--ease)}
 .ca-btn-sm:hover{opacity:.85}
 .ca-btn-danger{background:var(--red);color:#fff}
 .ca-btn-info{background:var(--blue2);color:#fff}
-.ca-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-  border-radius:18px;padding:1.3rem;margin-bottom:1.25rem}
-.ca-section h3{color:var(--gold2);font-size:.95rem;margin-bottom:.85rem;
-  font-weight:800;letter-spacing:-.1px}
+
+/* TOTP / QR */
 .ca-totp-box{text-align:center;padding:1rem}
 #ca-qr{display:inline-block;background:#fff;padding:12px;border-radius:14px;
   margin:1rem auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.ca-stat{display:inline-block;background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.08);border-radius:14px;
-  padding:.6rem 1rem;margin:.25rem;text-align:center;min-width:80px}
-.ca-stat-num{font-size:1.6rem;font-weight:900;color:var(--gold2);line-height:1}
-.ca-stat-label{font-size:.68rem;color:rgba(255,255,255,.45);text-transform:uppercase;
-  letter-spacing:.5px;margin-top:4px}
+
+/* Event badge (used elsewhere) */
 .badge-event{display:inline-block;
   background:linear-gradient(135deg,var(--blue3),var(--blue-dark));
   color:#fff;border-radius:50px;padding:4px 14px;font-size:.78rem;font-weight:700;
   letter-spacing:.5px}
+
+/* Responsive table — scroll en mobile */
+.ca-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:600px){
+  .ca-table{min-width:480px}
+  .ca-table th,.ca-table td{padding:.45rem .55rem;font-size:.78rem}
+  .ca-btn-sm{padding:4px 9px;font-size:.74rem}
+}
 
 /* ── MOBILE-FIRST ADJUSTMENTS ─────────────────── */
 @media (max-width:430px){
@@ -1820,12 +1865,18 @@ body.event-active #lights{opacity:0;pointer-events:none;transition:opacity .4s e
 
       <!-- DASHBOARD -->
       <div id="ca-step-dashboard" class="ca-step">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div>
-            <div style="font-size:1.3rem;font-weight:900;color:var(--gold)">🎄 Amigo Secreto</div>
-            <div style="font-size:.8rem;color:rgba(255,255,255,.4)">Panel ClauNet</div>
+        <!-- Header -->
+        <div class="ca-header">
+          <div class="ca-header-brand">
+            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <polygon points="14,2 17,10 26,10 19,15.5 21.5,24 14,19 6.5,24 9,15.5 2,10 11,10" fill="rgba(100,181,246,.85)" stroke="rgba(66,165,245,.5)" stroke-width="1"/>
+            </svg>
+            <div>
+              <div class="ca-header-title">Amigo Secreto</div>
+              <div class="ca-header-sub">Panel ClauNet</div>
+            </div>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="caLogout()">Salir</button>
+          <button class="ca-btn-salir" onclick="caLogout()">Salir</button>
         </div>
 
         <!-- Stats -->
@@ -1839,7 +1890,7 @@ body.event-active #lights{opacity:0;pointer-events:none;transition:opacity .4s e
         <div class="ca-section">
           <h3>Todos los eventos</h3>
           <div id="ca-events-loading" style="text-align:center;padding:1rem;color:rgba(255,255,255,.4)">Cargando...</div>
-          <div style="overflow-x:auto">
+          <div class="ca-table-wrap">
             <table class="ca-table" id="ca-events-table" style="display:none">
               <thead>
                 <tr>
@@ -1949,11 +2000,12 @@ function goTo(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(pageId)?.classList.add('active');
   // Clases en body para identidad visual por pantalla
-  document.body.classList.toggle('home-active',    pageId === 'page-home');
-  document.body.classList.toggle('create-active',  pageId === 'page-create');
-  document.body.classList.toggle('created-active', pageId === 'page-created');
-  document.body.classList.toggle('admin-active',   pageId === 'page-admin');
-  document.body.classList.toggle('event-active',   pageId === 'page-event');
+  document.body.classList.toggle('home-active',         pageId === 'page-home');
+  document.body.classList.toggle('create-active',       pageId === 'page-create');
+  document.body.classList.toggle('created-active',      pageId === 'page-created');
+  document.body.classList.toggle('admin-active',        pageId === 'page-admin');
+  document.body.classList.toggle('event-active',        pageId === 'page-event');
+  document.body.classList.toggle('claunet-admin-active',pageId === 'page-claunet-admin');
   window.scrollTo(0, 0);
 }
 
@@ -2959,7 +3011,7 @@ async function caLoadDashboard() {
   tbody.innerHTML = events.map(e => `
     <tr>
       <td><strong>${e.name}</strong></td>
-      <td><code style="color:var(--gold)">${e.code}</code></td>
+      <td><code style="color:var(--blue-light)">${e.code}</code></td>
       <td style="font-size:.8rem">${e.delivery_date ? new Date(e.delivery_date).toLocaleDateString('es-CL') : '—'}</td>
       <td style="text-align:center">${e.participant_count || 0}</td>
       <td>${e.drawn ? '<span class="ca-badge-drawn">Sorteado</span>' : '<span class="ca-badge-pending">Pendiente</span>'}</td>
