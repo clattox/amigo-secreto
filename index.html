@@ -3975,6 +3975,13 @@ document.getElementById('nubi-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('nubi-overlay')) nubiClose();
 });
 
+})();
+</script>
+
+<!-- Botón modo día/noche -->
+<button id="theme-toggle" aria-label="Cambiar a modo claro">☀️</button>
+
+<script>
 // ── MODO DÍA / NOCHE ───────────────────────────────
 (function(){
   var btn = document.getElementById('theme-toggle');
@@ -3991,14 +3998,10 @@ document.getElementById('nubi-overlay').addEventListener('click', e => {
   btn.addEventListener('click', function(){
     applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
   });
-  // Sincronizar si el usuario cambia la preferencia del sistema
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function(e){
     if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'light' : 'dark');
   });
 })();
 </script>
-
-<!-- Botón modo día/noche -->
-<button id="theme-toggle" aria-label="Cambiar a modo claro">☀️</button>
 </body>
 </html>
