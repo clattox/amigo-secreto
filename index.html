@@ -935,6 +935,10 @@ body.claunet-admin-active #lights{opacity:0;pointer-events:none;transition:opaci
   .ca-btn-sm{padding:4px 9px;font-size:.74rem}
 }
 
+/* Contenedor de acciones por fila */
+.ca-actions{display:flex;flex-direction:column;align-items:center;gap:5px}
+.ca-actions .ca-btn-sm{width:72px;text-align:center;margin:0}
+
 /* ── MOBILE-FIRST ADJUSTMENTS ─────────────────── */
 @media (max-width:430px){
   .page{padding:16px 12px 48px;gap:16px}
@@ -3016,8 +3020,10 @@ async function caLoadDashboard() {
       <td style="text-align:center">${e.participant_count || 0}</td>
       <td>${e.drawn ? '<span class="ca-badge-drawn">Sorteado</span>' : '<span class="ca-badge-pending">Pendiente</span>'}</td>
       <td>
-        <button class="ca-btn-sm ca-btn-info" onclick="window.open('/#/e/${e.code}','_blank')">Ver</button>
-        <button class="ca-btn-sm ca-btn-danger" onclick="caDeleteEvent('${e.id}','${e.name}')" style="margin-left:4px">Eliminar</button>
+        <div class="ca-actions">
+          <button class="ca-btn-sm ca-btn-info" onclick="window.open('/#/e/${e.code}','_blank')">Ver</button>
+          <button class="ca-btn-sm ca-btn-danger" onclick="caDeleteEvent('${e.id}','${e.name}')">Eliminar</button>
+        </div>
       </td>
     </tr>
   `).join('');
