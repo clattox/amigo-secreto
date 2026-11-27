@@ -2559,15 +2559,15 @@ let adminPinBuffer = '';
 let pendingAdminPin = '';  // se guarda al crear evento
 
 function route() {
-  const hash = location.hash || '#/';
-  if (hash === '#/' || hash === '') return goTo('page-home');
-  if (hash === '#/organizar') return goTo('page-create');
-  if (hash === '#/claunet-admin') { goTo('page-claunet-admin'); caCheckSession(); return; }
+  const path = location.pathname || '/';
+  if (path === '/' || path === '') return goTo('page-home');
+  if (path === '/organizar') return goTo('page-create');
+  if (path === '/claunet-admin') { goTo('page-claunet-admin'); caCheckSession(); return; }
 
-  const matchEvent = hash.match(/^#\/e\/([A-Z0-9]{4,8})(?:\/admin)?$/i);
+  const matchEvent = path.match(/^\/e\/([A-Z0-9]{4,8})(\/admin)?$/i);
   if (matchEvent) {
     currentEventCode = matchEvent[1].toUpperCase();
-    if (hash.includes('/admin')) {
+    if (matchEvent[2]) {
       loadAdminPage();
     } else {
       loadEventPage();
@@ -2578,7 +2578,7 @@ function route() {
   goTo('page-home');
 }
 
-window.addEventListener('hashchange', route);
+window.addEventListener('popstate', route);
 window.addEventListener('load', route);
 
 function goTo(pageId) {
@@ -2607,7 +2607,7 @@ function showJoinForm() {
 function joinEvent() {
   const code = document.getElementById('join-code').value.trim().toUpperCase();
   if (!code) return;
-  location.hash = `#/e/${code}`;
+  history.pushState({}, '', `/e/${code}`); route();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2849,8 +2849,7 @@ async function crearEvento() {
 }
 
 function showCreatedPage(data) {
-  const baseUrl = location.origin + location.pathname;
-  const eventUrl = `${baseUrl}#/e/${data.eventCode}`;
+  const eventUrl = `${location.origin}/e/${data.eventCode}`;
 
   document.getElementById('event-link-display').textContent = eventUrl;
   document.getElementById('admin-pin-display').textContent = data.adminPin;
@@ -2877,13 +2876,12 @@ function copyEventLink() {
 }
 
 function goToAdmin() {
-  location.hash = `#/e/${currentEventCode}/admin`;
+  history.pushState({}, '', `/e/${currentEventCode}/admin`); route();
 }
 
 function copyAllPins() {
   const eventName = document.getElementById('event-name').value.trim();
-  const baseUrl = location.origin + location.pathname;
-  const eventUrl = `${baseUrl}#/e/${currentEventCode}`;
+  const eventUrl = `${location.origin}/e/${currentEventCode}`;
   const adminPin = document.getElementById('admin-pin-display').textContent;
 
   const rows = Array.from(document.querySelectorAll('#pins-table tr')).slice(1);
@@ -3250,8 +3248,7 @@ function showAdminPanel() {
   document.getElementById('card-admin-login').style.display = 'none';
   document.getElementById('card-admin-panel').style.display = 'block';
 
-  const baseUrl = location.origin + location.pathname;
-  const eventUrl = `${baseUrl}#/e/${currentEventCode}`;
+  const eventUrl = `${location.origin}/e/${currentEventCode}`;
   document.getElementById('admin-event-link').textContent = eventUrl;
 
   if (currentEventData?.drawn) {
@@ -3603,7 +3600,7 @@ async function caLoadDashboard() {
       <td>${e.drawn ? '<span class="ca-badge-drawn">Sorteado</span>' : '<span class="ca-badge-pending">Pendiente</span>'}</td>
       <td>
         <div class="ca-actions">
-          <button class="ca-btn-sm ca-btn-info" onclick="window.open('/#/e/${e.code}','_blank')">Ver</button>
+          <button class="ca-btn-sm ca-btn-info" onclick="window.open('/e/${e.code}','_blank')">Ver</button>
           <button class="ca-btn-sm ca-btn-danger" onclick="caDeleteEvent('${e.id}','${e.name}')">Eliminar</button>
         </div>
       </td>
@@ -3638,7 +3635,7 @@ function caLogout() {
   localStorage.removeItem(CA_SESSION_KEY);
   caShowStep('ca-step-pass');
   document.getElementById('ca-pass').value = '';
-  location.hash = '#/';
+  history.pushState({}, '', '/'); route();
 }
 </script>
 
