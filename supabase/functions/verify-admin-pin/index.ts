@@ -149,8 +149,8 @@ serve(async (req) => {
       )
     }
 
-    if (!rateCheck.allowed) {
-      const mins = rateCheck.retry_after_seconds ? Math.ceil(rateCheck.retry_after_seconds / 60) : 15
+    if (rateCheck === false) {
+      const mins = 15
       return new Response(
         JSON.stringify({
           ok: false,
