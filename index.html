@@ -2920,6 +2920,14 @@ async function loadEventPage() {
       return;
     }
 
+    // Verificar expiración
+    if (events.expires_at && new Date(events.expires_at) < new Date()) {
+      document.getElementById('event-title-display').textContent = 'Evento expirado';
+      document.getElementById('event-meta-display').innerHTML = '';
+      document.getElementById('names-grid').innerHTML = '<div class="glass-alert glass-alert-err">Este evento ya expiró. Los eventos se eliminan automáticamente después de 90 días.</div>';
+      return;
+    }
+
     currentEventData = events;
     document.getElementById('event-title-display').textContent = events.name;
 
@@ -3158,12 +3166,19 @@ async function loadAdminPage() {
   // Cargar nombre del evento
   const { data: ev } = await sb
     .from('public_events')
-    .select('id, name, drawn')
+    .select('id, name, drawn, expires_at')
     .eq('code', currentEventCode)
     .maybeSingle();
 
   if (!ev) {
     document.getElementById('admin-event-name').textContent = 'Evento no encontrado';
+    return;
+  }
+
+  // Verificar expiración
+  if (ev.expires_at && new Date(ev.expires_at) < new Date()) {
+    document.getElementById('admin-event-name').textContent = 'Evento expirado';
+    document.getElementById('card-admin-login').innerHTML = '<div class="glass-alert glass-alert-err" style="margin-top:1rem">Este evento ya expiró. Los eventos se eliminan automáticamente después de 90 días.</div>';
     return;
   }
 
