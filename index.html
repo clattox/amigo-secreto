@@ -507,6 +507,58 @@ body.claunet-admin-active #lights{opacity:0;pointer-events:none;transition:opaci
   font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:.4px}
 .h-footer a{color:rgba(255,255,255,.28);text-decoration:none;transition:color var(--ease)}
 .h-footer a:hover{color:var(--blue3)}
+.h-footer-sep{margin:0 6px;opacity:.3}
+
+/* ── MANUAL ─────────────────────────────────────────────── */
+#page-manual{padding:0;overflow-y:auto;display:flex;flex-direction:column;min-height:100%}
+.man-header{text-align:center;padding:3rem 1.5rem 2rem;border-bottom:1px solid rgba(66,165,245,.12)}
+.man-brand{font-size:.72rem;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.35);
+  text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;
+  justify-content:center;gap:.5rem}
+.man-brand-dot{width:4px;height:4px;border-radius:50%;background:var(--blue3)}
+.man-header h2{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;line-height:1.1;
+  margin-bottom:.5rem}
+.man-header h2 span{color:var(--blue3)}
+.man-header p{color:rgba(255,255,255,.45);font-size:.9rem}
+.man-back{position:absolute;top:1rem;left:1rem}
+.man-container{max-width:680px;margin:0 auto;padding:2rem 1.25rem 4rem;width:100%}
+.man-tabs{display:flex;gap:.4rem;margin-bottom:2rem;
+  background:rgba(10,25,60,.5);border:1px solid rgba(66,165,245,.14);
+  border-radius:12px;padding:4px}
+.man-tab{flex:1;padding:.55rem .8rem;border-radius:9px;border:none;
+  font-size:.88rem;font-weight:700;cursor:pointer;font-family:var(--font);
+  transition:all .2s;background:transparent;color:rgba(255,255,255,.4)}
+.man-tab.active{background:var(--blue2);color:#fff}
+.man-role{display:none}.man-role.active{display:block}
+.man-section-title{font-size:1.1rem;font-weight:900;color:#fff;margin-bottom:1.25rem}
+.man-card{background:rgba(10,25,60,.55);border:1px solid rgba(66,165,245,.12);
+  border-radius:16px;padding:1.25rem 1.3rem;margin-bottom:1.1rem}
+.man-card-label{font-size:.68rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:var(--blue3);margin-bottom:.85rem}
+.man-step{display:flex;gap:1rem;margin-bottom:.9rem;align-items:flex-start}
+.man-step:last-child{margin-bottom:0}
+.man-num{flex-shrink:0;width:30px;height:30px;border-radius:50%;
+  background:rgba(30,136,229,.2);border:1.5px solid rgba(66,165,245,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:900;color:var(--blue3);margin-top:1px}
+.man-step-body h3{font-size:.93rem;font-weight:800;margin-bottom:.2rem;color:#fff}
+.man-step-body p{color:rgba(255,255,255,.65);font-size:.87rem;line-height:1.5}
+.man-step-body p+p{margin-top:.35rem}
+.man-notice{display:flex;gap:.7rem;align-items:flex-start;
+  background:rgba(13,71,161,.28);border:1px solid rgba(66,165,245,.22);
+  border-radius:11px;padding:.9rem 1rem;margin-bottom:1rem}
+.man-notice.warn{background:rgba(160,100,0,.2);border-color:rgba(255,213,79,.22)}
+.man-notice-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.man-notice p{color:rgba(255,255,255,.75);font-size:.86rem;line-height:1.5}
+.man-divider{border:none;border-top:1px solid rgba(66,165,245,.1);margin:1.8rem 0}
+.man-tag{display:inline-block;background:rgba(21,101,192,.45);
+  border:1px solid rgba(66,165,245,.3);border-radius:50px;
+  padding:1px 9px;font-size:.72rem;font-weight:700;color:var(--blue-light);margin-left:4px}
+.man-tag.gold{background:rgba(160,100,0,.3);border-color:rgba(255,213,79,.3);color:var(--gold2)}
+.man-faq-title{font-size:.68rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,.5);margin-bottom:.5rem}
+.man-faq-body{color:rgba(255,255,255,.7);font-size:.88rem;line-height:1.5}
+body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s ease}
 
 /* Card de código legacy — mantener para compatibilidad si JS la usa */
 .join-card{
@@ -1405,7 +1457,11 @@ body.claunet-admin-active #lights{opacity:0;pointer-events:none;transition:opaci
       </div>
 
       <!-- Footer ClauNet -->
-      <div class="h-footer">por <a href="https://claunet.cl" target="_blank">ClauNet</a></div>
+      <div class="h-footer">
+        <a href="#" onclick="goTo('page-manual');return false;">Ayuda</a>
+        <span class="h-footer-sep">·</span>
+        por <a href="https://claunet.cl" target="_blank">ClauNet</a>
+      </div>
 
     </div>
 
@@ -1806,6 +1862,239 @@ body.claunet-admin-active #lights{opacity:0;pointer-events:none;transition:opaci
     </div>
   </div>
 
+  <!-- ══ MANUAL DE USUARIO ══════════════════════════════ -->
+  <div class="page" id="page-manual" style="position:relative">
+    <button class="page-header-back" onclick="goTo('page-home')" style="position:absolute;top:1rem;left:1rem;z-index:10">← Volver</button>
+    <div class="man-header">
+      <div class="man-brand"><div class="man-brand-dot"></div>ClauNet<div class="man-brand-dot"></div></div>
+      <h2>Manual de <span>Amigo Secreto</span></h2>
+      <p>Guía paso a paso para organizar o participar en un sorteo</p>
+    </div>
+    <div class="man-container">
+      <div class="man-tabs">
+        <button class="man-tab active" onclick="manShowRole('org',this)">🎁 Soy organizador</button>
+        <button class="man-tab" onclick="manShowRole('part',this)">🎄 Soy participante</button>
+      </div>
+
+      <!-- ORGANIZADOR -->
+      <div id="man-role-org" class="man-role active">
+        <div class="man-section-title">Crear y gestionar tu sorteo</div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 1 — Inicio</div>
+          <div class="man-step">
+            <div class="man-num">1</div>
+            <div class="man-step-body">
+              <h3>Entra a amigosecreto.claunet.cl</h3>
+              <p>Verás la pantalla de inicio con la mascota azul de ClauNet. Haz clic en <strong>"Crear mi sorteo"</strong>. No necesitas registrarte ni crear una cuenta.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 2 — Datos del evento</div>
+          <div class="man-step">
+            <div class="man-num">2</div>
+            <div class="man-step-body">
+              <h3>Nombre del evento <span class="man-tag gold">Obligatorio</span></h3>
+              <p>Ponle un nombre que identifique el sorteo, por ej: <em>Amigo Secreto Oficina 2026</em>.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">3</div>
+            <div class="man-step-body">
+              <h3>Fecha de entrega <span class="man-tag">Opcional</span></h3>
+              <p>Aparecerá en la pantalla de cada participante como recordatorio.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">4</div>
+            <div class="man-step-body">
+              <h3>Presupuesto máximo <span class="man-tag">Opcional</span></h3>
+              <p>El tope de regalo en pesos chilenos (CLP). Solo es referencia.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 3 — Participantes</div>
+          <div class="man-step">
+            <div class="man-num">5</div>
+            <div class="man-step-body">
+              <h3>Agrega los nombres</h3>
+              <p>Escribe el nombre de cada persona y haz clic en <strong>"+ Agregar participante"</strong>. Para eliminar a alguien, haz clic en la <strong>×</strong> a su derecha.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">6</div>
+            <div class="man-step-body">
+              <h3>Restricciones <span class="man-tag">Opcional</span></h3>
+              <p>Pares que <strong>NO</strong> pueden quedar juntos (ej: una pareja). Haz clic en <strong>"+ Restricción"</strong> y elige los dos nombres.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 4 — Confirmar y crear</div>
+          <div class="man-step">
+            <div class="man-num">7</div>
+            <div class="man-step-body">
+              <h3>Revisa el resumen y crea el evento</h3>
+              <p>Verifica nombre, participantes y restricciones. Luego haz clic en <strong>"Crear evento y generar PINs"</strong>.</p>
+            </div>
+          </div>
+          <div class="man-notice warn">
+            <div class="man-notice-icon">⚠️</div>
+            <p><strong>Guarda los PINs de inmediato</strong> — no se pueden recuperar una vez que cierres la pantalla.</p>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 5 — Guarda y comparte</div>
+          <div class="man-step">
+            <div class="man-num">8</div>
+            <div class="man-step-body">
+              <h3>Link del evento</h3>
+              <p>Copia el link con <strong>"Copiar link"</strong> y compártelo con todos por WhatsApp, correo o grupo.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">9</div>
+            <div class="man-step-body">
+              <h3>PINs de los participantes</h3>
+              <p>Envía cada PIN <strong>en privado</strong> a su dueño. Usa el botón <strong>"Copiar todo para WhatsApp"</strong> y reenvía individualmente.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">10</div>
+            <div class="man-step-body">
+              <h3>Tu PIN de administrador</h3>
+              <p>El PIN dorado marcado <em>"Solo para ti"</em>. Te permite volver al panel de administración cuando quieras.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 6 — Panel de administración</div>
+          <div class="man-step">
+            <div class="man-num">11</div>
+            <div class="man-step-body">
+              <h3>Realizar el sorteo</h3>
+              <p>Cuando todos estén listos, haz clic en <strong>"Realizar sorteo"</strong>. El sistema asignará respetando las restricciones. El sorteo solo puede realizarse una vez.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">12</div>
+            <div class="man-step-body">
+              <h3>Resetear PIN de un participante</h3>
+              <p>Si alguien olvidó su PIN, haz clic en <strong>"Resetear PIN"</strong> junto a su nombre y envíale el nuevo PIN por privado.</p>
+            </div>
+          </div>
+        </div>
+      </div><!-- /man-role-org -->
+
+      <!-- PARTICIPANTE -->
+      <div id="man-role-part" class="man-role">
+        <div class="man-section-title">Descubrir tu amigo secreto</div>
+
+        <div class="man-notice">
+          <div class="man-notice-icon">📩</div>
+          <p>El organizador te habrá enviado <strong>dos cosas</strong>: el <strong>link del evento</strong> y tu <strong>PIN de 4 dígitos</strong> por privado. Necesitas ambos.</p>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 1 — Abre el link</div>
+          <div class="man-step">
+            <div class="man-num">1</div>
+            <div class="man-step-body">
+              <h3>Entra al evento</h3>
+              <p>Abre el link que te compartió el organizador. Verás el nombre del evento, fecha y presupuesto en la parte superior.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 2 — Selecciona tu nombre</div>
+          <div class="man-step">
+            <div class="man-num">2</div>
+            <div class="man-step-body">
+              <h3>¿Quién eres tú?</h3>
+              <p>Verás una grilla con todos los participantes. Haz clic en <strong>tu nombre</strong>. Si te equivocas, usa <strong>"← Cambiar nombre"</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 3 — Ingresa tu PIN</div>
+          <div class="man-step">
+            <div class="man-num">3</div>
+            <div class="man-step-body">
+              <h3>Ingresa el PIN del organizador</h3>
+              <p>Escribe el PIN de 4 dígitos que te enviaron usando el teclado en pantalla. Haz clic en <strong>"Entrar →"</strong>.</p>
+            </div>
+          </div>
+          <hr class="man-divider" style="margin:1rem 0">
+          <div class="man-step">
+            <div class="man-num">★</div>
+            <div class="man-step-body">
+              <h3>Primera vez: crea tu PIN personal</h3>
+              <p>El sistema te pedirá que crees tu <strong>propio PIN de 4 dígitos</strong>. Elige uno que recuerdes — lo necesitarás si quieres volver a ver tu resultado.</p>
+            </div>
+          </div>
+          <div class="man-notice warn">
+            <div class="man-notice-icon">⚠️</div>
+            <p><strong>Recuerda tu PIN personal.</strong> Si lo olvidas, pídele al organizador que lo resetee.</p>
+          </div>
+        </div>
+
+        <div class="man-card">
+          <div class="man-card-label">Paso 4 — Descubre tu amigo secreto</div>
+          <div class="man-step">
+            <div class="man-num">4</div>
+            <div class="man-step-body">
+              <h3>Toca el regalo</h3>
+              <p>Verás un regalo animado. Tócalo o haz clic para revelar a quién le harás el regalo.</p>
+            </div>
+          </div>
+          <div class="man-step">
+            <div class="man-num">5</div>
+            <div class="man-step-body">
+              <h3>¡Resultado revelado!</h3>
+              <p>El nombre de tu amigo secreto aparecerá en grande. Para verlo de nuevo, entra con el mismo link y tu PIN personal.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="man-notice">
+          <div class="man-notice-icon">🔒</div>
+          <p>Tu amigo secreto <strong>solo lo sabes tú</strong>. Ni el organizador ni los demás pueden verlo desde la app.</p>
+        </div>
+      </div><!-- /man-role-part -->
+
+      <hr class="man-divider">
+
+      <div class="man-section-title" style="font-size:1rem">Preguntas frecuentes</div>
+
+      <div class="man-card">
+        <div class="man-faq-title">¿Puedo volver a ver mi amigo secreto?</div>
+        <div class="man-faq-body">Sí. Entra al link, selecciona tu nombre e ingresa tu <strong>PIN personal</strong> (el que tú creaste).</div>
+      </div>
+      <div class="man-card">
+        <div class="man-faq-title">Olvidé mi PIN personal</div>
+        <div class="man-faq-body">Pídele al organizador que haga clic en <strong>"Resetear PIN"</strong> junto a tu nombre. Recibirás un PIN temporal y podrás crear uno nuevo.</div>
+      </div>
+      <div class="man-card">
+        <div class="man-faq-title">¿Cuándo se realiza el sorteo?</div>
+        <div class="man-faq-body">Lo inicia el organizador desde su panel. Mientras no esté hecho, verás un mensaje indicando que el sorteo está pendiente.</div>
+      </div>
+      <div class="man-card">
+        <div class="man-faq-title">¿Necesito una cuenta o registro?</div>
+        <div class="man-faq-body">No. Todo funciona con PINs, sin cuentas, sin correo, sin registro.</div>
+      </div>
+
+    </div><!-- /man-container -->
+  </div><!-- /page-manual -->
+
   <!-- ══ CLAUNET ADMIN ══════════════════════════════════ -->
   <div class="page" id="page-claunet-admin">
     <div style="max-width:700px;margin:0 auto;padding:1rem">
@@ -2010,6 +2299,7 @@ function goTo(pageId) {
   document.body.classList.toggle('admin-active',        pageId === 'page-admin');
   document.body.classList.toggle('event-active',        pageId === 'page-event');
   document.body.classList.toggle('claunet-admin-active',pageId === 'page-claunet-admin');
+  document.body.classList.toggle('manual-active',        pageId === 'page-manual');
   window.scrollTo(0, 0);
 }
 
@@ -3041,6 +3331,13 @@ async function caDeleteEvent(id, name) {
   const data = await r.json();
   if (data.ok) { showToast('Evento eliminado'); caLoadDashboard(); }
   else alert('Error eliminando evento');
+}
+
+function manShowRole(role, btn) {
+  document.querySelectorAll('.man-role').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.man-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('man-role-' + role).classList.add('active');
+  btn.classList.add('active');
 }
 
 function caLogout() {
