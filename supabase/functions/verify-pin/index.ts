@@ -33,14 +33,29 @@ Deno.serve(async (req: Request) => {
     );
 
     // ── Obtener participante con su evento ──────────────
-    const { data: participant, error: partErr } = await supabase
-      .from("participants")
-      .select("id, event_id, name, pin_hash, pin_salt, assignment_encrypted, assignment_iv, assignment_salt, pin_changed, revealed")
-      .eq("id", participantId)
-      .maybeSingle();
+    // Intentar con columnas nuevas; si no existen aún, fallback sin ellas
+    let participant: Record<string, unknown> | null = null;
+    {
+      const { data, error } = await supabase
+        .from("participants")
+        .select("id, event_id, name, pin_hash, pin_salt, assignment_encrypted, assignment_iv, assignment_salt, pin_changed, revealed")
+        .eq("id", participantId)
+        .maybeSingle();
 
-    if (partErr || !participant) {
-      return err(404, "Participante no encontrado");
+      if (error && error.message?.includes("pin_changed")) {
+        // Columnas de migración aún no aplicadas — query sin ellas
+        const { data: data2, error: err2 } = await supabase
+          .from("participants")
+          .select("id, event_id, name, pin_hash, pin_salt, assignment_encrypted, assignment_iv, assignment_salt")
+          .eq("id", participantId)
+          .maybeSingle();
+        if (err2 || !data2) return err(404, "Participante no encontrado");
+        participant = { ...data2, pin_changed: true, revealed: false }; // tratar como ya migrado
+      } else if (error || !data) {
+        return err(404, "Participante no encontrado");
+      } else {
+        participant = data;
+      }
     }
 
     // ── Verificar que el evento coincide ─────────────────
