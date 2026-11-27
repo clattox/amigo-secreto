@@ -890,6 +890,110 @@ body.home-active #bg::after{
   .glass-keypad{max-width:210px}
   .glass-key{padding:12px 10px;font-size:1.1rem}
 }
+
+/* ── CREAR EVENTO — override azul Claunet ───────────── */
+
+/* Header de la pantalla */
+#page-create .page-header{
+  padding:20px 0 8px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px}
+#page-create .page-header-back{
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.1);
+  font-size:.82rem;border-radius:12px;
+  padding:8px 14px;color:rgba(255,255,255,.55)}
+#page-create .page-header-back:hover{
+  background:rgba(255,255,255,.12);
+  border-color:rgba(100,181,246,.35);
+  color:#fff}
+#page-create .cr-heading{
+  margin-top:4px}
+#page-create .cr-title{
+  font-family:var(--font-title);
+  font-size:1.75rem;font-weight:800;
+  color:#fff;line-height:1.1;letter-spacing:-.3px}
+#page-create .cr-sub{
+  font-size:.88rem;color:rgba(255,255,255,.45);
+  margin-top:5px;line-height:1.5}
+
+/* Panel principal — override para azul */
+#page-create .glass-panel{
+  border-color:rgba(100,181,246,.12);
+  box-shadow:0 24px 64px rgba(0,0,0,.45),
+             0 0 0 1px rgba(100,181,246,.05),
+             0 0 40px rgba(30,136,229,.06)}
+
+/* Línea decorativa del head: azul en vez de dorado */
+#page-create .glass-panel-head::after{
+  background:linear-gradient(90deg,transparent,rgba(66,165,245,.25),transparent)}
+
+/* Steps bar: active y done azules */
+#page-create .steps-bar-step.done{
+  background:var(--blue3);
+  box-shadow:0 0 8px rgba(66,165,245,.4)}
+#page-create .steps-bar-step.active{
+  background:var(--blue-light);
+  box-shadow:0 0 8px rgba(100,181,246,.5)}
+
+/* Panel title: sin emoji, estilo limpio */
+#page-create .glass-panel-title{
+  font-size:1rem;font-weight:800;
+  color:rgba(255,255,255,.92);letter-spacing:-.1px}
+
+/* Focus de inputs: azul ClauNet */
+#page-create .glass-field input:focus,
+#page-create .glass-field select:focus{
+  border-color:rgba(66,165,245,.55);
+  background:rgba(255,255,255,.1);
+  box-shadow:0 0 0 4px rgba(66,165,245,.12)}
+
+/* Select options: fondo azul oscuro */
+#page-create .glass-field select option,
+#page-create .glass-excl-row select option{
+  background:var(--blue-bg2)}
+
+/* Botón "Siguiente →" (btn-primary) scoped: azul */
+#page-create .btn-primary{
+  background:linear-gradient(135deg,var(--blue3) 0%,var(--blue) 55%,var(--blue-dark) 100%);
+  box-shadow:0 4px 20px rgba(30,136,229,.4)}
+#page-create .btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(30,136,229,.55)}
+#page-create .btn-primary:active{
+  transform:translateY(0);
+  box-shadow:0 2px 10px rgba(30,136,229,.3)}
+#page-create .btn-primary::after{
+  background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 50%)}
+
+/* Botón agregar participante: azul */
+#page-create .glass-btn-add{
+  background:rgba(66,165,245,.08);
+  border-color:rgba(66,165,245,.25);
+  color:var(--blue3)}
+#page-create .glass-btn-add:hover{
+  background:rgba(66,165,245,.16);
+  border-color:var(--blue3)}
+
+/* Restricciones: foco azul en selects */
+#page-create .glass-excl-row select:focus{
+  border-color:rgba(66,165,245,.45)}
+
+/* Participant row focus: azul */
+#page-create .glass-participant-row:focus-within{
+  border-color:rgba(66,165,245,.3);
+  background:rgba(255,255,255,.09)}
+
+/* Alerta de advertencia: mantener dorado está bien, solo ajustamos */
+#page-create .glass-alert-warn{
+  background:rgba(66,165,245,.07);
+  border-color:rgba(66,165,245,.22);
+  color:var(--blue-light)}
+
+/* Paso 2: botón excl pequeño */
+#page-create #btn-add-excl{
+  font-size:.8rem;padding:8px 14px;width:auto}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/otpauth@9.3.6/dist/otpauth.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -1009,10 +1113,10 @@ body.home-active #bg::after{
   <div class="page" id="page-create">
 
     <div class="page-header">
-      <button class="page-header-back" onclick="goTo('page-home')">← Inicio</button>
-      <div class="page-header-info">
-        <div class="page-header-title">Crear evento</div>
-        <div class="page-header-sub">Amigo Secreto · ClauNet</div>
+      <button class="page-header-back" onclick="goTo('page-home')">← Volver</button>
+      <div class="cr-heading">
+        <div class="cr-title">¡Organicemos un intercambio!</div>
+        <div class="cr-sub">Configura los detalles de tu Amigo Secreto</div>
       </div>
     </div>
 
@@ -1025,7 +1129,7 @@ body.home-active #bg::after{
           <div class="steps-bar-step"></div>
         </div>
         <div class="steps-label">Paso 1 de 3 — Datos del evento</div>
-        <div class="glass-panel-title">📋 Datos del evento</div>
+        <div class="glass-panel-title">Datos del evento</div>
         <div class="glass-panel-sub">Ponle nombre y detalles opcionales a tu Amigo Secreto</div>
       </div>
       <div class="glass-panel-body">
@@ -1039,9 +1143,9 @@ body.home-active #bg::after{
           <span class="hint">Opcional — aparece como recordatorio en el evento</span>
         </div>
         <div class="glass-field">
-          <label>Monto máximo (CLP)</label>
-          <input type="number" id="event-amount" placeholder="Ej: 10000" min="100" max="10000000">
-          <span class="hint">Opcional</span>
+          <label>Presupuesto máximo (CLP)</label>
+          <input type="number" id="event-amount" placeholder="Ej: 15000" min="100" max="10000000">
+          <span class="hint">Opcional — aparece como referencia para los participantes</span>
         </div>
         <button class="btn btn-primary" onclick="goToStep2()">Siguiente →</button>
       </div>
@@ -1056,7 +1160,7 @@ body.home-active #bg::after{
           <div class="steps-bar-step"></div>
         </div>
         <div class="steps-label">Paso 2 de 3 — Participantes</div>
-        <div class="glass-panel-title">👥 Participantes</div>
+        <div class="glass-panel-title">Participantes</div>
         <div class="glass-panel-sub">Agrega a todos los que participarán</div>
       </div>
       <div class="glass-panel-body">
@@ -1069,7 +1173,7 @@ body.home-active #bg::after{
         <div class="glass-excl-section">
           <div class="glass-excl-header">
             <div>
-              <div class="glass-excl-title">🚫 Restricciones <span style="font-weight:400;font-size:.78rem;opacity:.6">(opcional)</span></div>
+              <div class="glass-excl-title">Restricciones <span style="font-weight:400;font-size:.78rem;opacity:.6">(opcional)</span></div>
               <div class="glass-excl-sub">Pares que NO pueden quedar juntos</div>
             </div>
             <button class="glass-btn-add" onclick="addExclusionRow()" id="btn-add-excl" style="width:auto;font-size:.8rem;padding:8px 12px">
@@ -1097,7 +1201,7 @@ body.home-active #bg::after{
           <div class="steps-bar-step active"></div>
         </div>
         <div class="steps-label">Paso 3 de 3 — Confirmar</div>
-        <div class="glass-panel-title">✅ Confirmar y crear</div>
+        <div class="glass-panel-title">Confirmar y crear</div>
         <div class="glass-panel-sub">Revisa los datos antes de crear el evento</div>
       </div>
       <div class="glass-panel-body">
@@ -1106,7 +1210,7 @@ body.home-active #bg::after{
           Al crear el evento, se generarán los PINs automáticamente. <strong>Guárdalos de inmediato</strong> porque no se pueden recuperar.
         </div>
         <button class="btn btn-primary mt-2" id="btn-create" onclick="crearEvento()">
-          🎁 Crear evento y generar PINs
+          Crear evento y generar PINs
         </button>
         <button class="btn btn-ghost mt-2" onclick="backToStep2()">← Volver</button>
       </div>
