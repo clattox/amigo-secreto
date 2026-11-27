@@ -842,7 +842,7 @@ function route() {
   const hash = location.hash || '#/';
   if (hash === '#/' || hash === '') return goTo('page-home');
   if (hash === '#/organizar') return goTo('page-create');
-  if (hash === '#/claunet-admin') return goTo('page-claunet-admin');
+  if (hash === '#/claunet-admin') { goTo('page-claunet-admin'); caCheckSession(); return; }
 
   const matchEvent = hash.match(/^#\/e\/([A-Z0-9]{4,8})(?:\/admin)?$/i);
   if (matchEvent) {
@@ -1723,6 +1723,32 @@ document.head.appendChild(style);
 let caTotpSecret = null;
 let caAuthenticated = false;
 
+const CA_SESSION_KEY = 'ca_session';
+const CA_SESSION_DAYS = 7;
+
+function caSaveSession() {
+  localStorage.setItem(CA_SESSION_KEY, JSON.stringify({ ts: Date.now() }));
+}
+
+function caHasValidSession() {
+  try {
+    const raw = localStorage.getItem(CA_SESSION_KEY);
+    if (!raw) return false;
+    const { ts } = JSON.parse(raw);
+    return (Date.now() - ts) < CA_SESSION_DAYS * 24 * 60 * 60 * 1000;
+  } catch { return false; }
+}
+
+function caCheckSession() {
+  if (caHasValidSession()) {
+    caAuthenticated = true;
+    caShowStep('ca-step-dashboard');
+    caLoadDashboard();
+    return true;
+  }
+  return false;
+}
+
 function caShowStep(id) {
   document.querySelectorAll('.ca-step').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1806,6 +1832,7 @@ async function caConfirmSetup() {
   const data = await r.json();
   if (data.ok) {
     caAuthenticated = true;
+    caSaveSession();
     caShowStep('ca-step-dashboard');
     caLoadDashboard();
   } else {
@@ -1822,6 +1849,7 @@ function caCheckTotp() {
   if (delta === null) { err.style.display = 'block'; return; }
   err.style.display = 'none';
   caAuthenticated = true;
+  caSaveSession();
   caShowStep('ca-step-dashboard');
   caLoadDashboard();
 }
@@ -1871,6 +1899,7 @@ async function caDeleteEvent(id, name) {
 function caLogout() {
   caAuthenticated = false;
   caTotpSecret = null;
+  localStorage.removeItem(CA_SESSION_KEY);
   caShowStep('ca-step-pass');
   document.getElementById('ca-pass').value = '';
   location.hash = '#/';
