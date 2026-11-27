@@ -1476,6 +1476,7 @@ body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s 
 /* Safe area móvil */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .nubi-fab { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  #theme-toggle { bottom: calc(84px + env(safe-area-inset-bottom)); }
 }
 
 /* Overlay */
@@ -1713,7 +1714,7 @@ body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s 
 
 /* ── BOTÓN TEMA DÍA/NOCHE ───────────────────────────── */
 #theme-toggle{
-  position:fixed;bottom:20px;right:16px;z-index:9999;
+  position:fixed;bottom:84px;right:18px;z-index:9999;
   width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.12);
