@@ -1348,6 +1348,287 @@ body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s 
   color:rgba(255,255,255,.7);
   border-color:rgba(100,181,246,.3);
   background:rgba(66,165,245,.06)}
+
+/* ══════════════════════════════════════════════════════════
+   NUBI — Asistente de soporte flotante
+   Todos los estilos con prefijo .nubi-* para aislamiento total
+   ══════════════════════════════════════════════════════════ */
+
+/* Botón flotante */
+.nubi-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,25,60,.85);
+  border: 1.5px solid rgba(66,165,245,.3);
+  border-radius: 50px;
+  padding: 7px 7px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4), 0 0 0 1px rgba(66,165,245,.08);
+  transition: padding .25s ease, border-color .2s, box-shadow .2s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.nubi-fab:hover {
+  border-color: rgba(66,165,245,.55);
+  box-shadow: 0 6px 28px rgba(0,0,0,.5), 0 0 16px rgba(66,165,245,.18);
+}
+.nubi-fab img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+.nubi-fab-label {
+  font-size: .78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.75);
+  white-space: nowrap;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width .3s ease, opacity .25s ease, padding .25s ease;
+  padding-right: 0;
+}
+.nubi-fab:hover .nubi-fab-label {
+  max-width: 160px;
+  opacity: 1;
+  padding-right: 8px;
+}
+
+/* Safe area móvil */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .nubi-fab { bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+/* Overlay */
+.nubi-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9100;
+  background: rgba(5,14,30,.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease;
+}
+.nubi-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Modal */
+.nubi-modal {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(8,20,50,.96);
+  border: 1px solid rgba(66,165,245,.18);
+  border-radius: 24px 24px 0 0;
+  padding: 1.4rem 1.4rem 1.6rem;
+  transform: translateY(32px);
+  transition: transform .28s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 -8px 48px rgba(0,0,0,.5);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .nubi-modal { padding-bottom: calc(1.6rem + env(safe-area-inset-bottom)); }
+}
+.nubi-overlay.open .nubi-modal {
+  transform: translateY(0);
+}
+
+/* En desktop: modal centrado flotante */
+@media (min-width: 540px) {
+  .nubi-overlay {
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 24px;
+  }
+  .nubi-modal {
+    border-radius: 20px;
+    max-height: 80vh;
+    margin-bottom: 80px;
+  }
+}
+
+/* Header del modal */
+.nubi-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  margin-bottom: 1.1rem;
+}
+.nubi-avatar {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.nubi-title {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: .2rem;
+  font-family: var(--font-title, inherit);
+}
+.nubi-subtitle {
+  font-size: .84rem;
+  color: rgba(255,255,255,.55);
+  line-height: 1.4;
+}
+
+/* Vistas del modal */
+.nubi-view { display: none; }
+.nubi-view.active { display: block; }
+
+/* Botones de acción */
+.nubi-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .8rem 1rem;
+  border-radius: 13px;
+  border: 1px solid rgba(66,165,245,.18);
+  background: rgba(10,30,70,.5);
+  color: rgba(255,255,255,.85);
+  font-size: .9rem;
+  font-weight: 700;
+  font-family: var(--font, inherit);
+  cursor: pointer;
+  margin-bottom: .6rem;
+  text-align: left;
+  transition: background .18s, border-color .18s;
+}
+.nubi-btn:last-child { margin-bottom: 0; }
+.nubi-btn:hover {
+  background: rgba(30,80,160,.4);
+  border-color: rgba(66,165,245,.4);
+}
+.nubi-btn svg {
+  flex-shrink: 0;
+  opacity: .8;
+}
+.nubi-btn-primary {
+  background: var(--blue2, #1E88E5);
+  border-color: transparent;
+  color: #fff;
+}
+.nubi-btn-primary:hover {
+  background: #1976D2;
+  border-color: transparent;
+}
+.nubi-btn-wa {
+  background: rgba(37,133,72,.25);
+  border-color: rgba(37,211,102,.2);
+  color: rgba(255,255,255,.9);
+}
+.nubi-btn-wa:hover {
+  background: rgba(37,133,72,.4);
+  border-color: rgba(37,211,102,.35);
+}
+.nubi-btn-close {
+  background: transparent;
+  border-color: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.4);
+  font-weight: 600;
+  font-size: .84rem;
+  margin-top: .3rem;
+}
+.nubi-btn-close:hover {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.14);
+  color: rgba(255,255,255,.6);
+}
+
+/* Botón volver */
+.nubi-back {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.4);
+  font-size: .78rem;
+  font-weight: 700;
+  font-family: var(--font, inherit);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1rem;
+  transition: color .15s;
+}
+.nubi-back:hover { color: rgba(255,255,255,.7); }
+
+/* Ayuda contextual — cómo funciona */
+.nubi-how-step {
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+  margin-bottom: .75rem;
+}
+.nubi-how-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(30,136,229,.25);
+  border: 1.5px solid rgba(66,165,245,.3);
+  font-size: .75rem;
+  font-weight: 900;
+  color: var(--blue3, #42A5F5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nubi-how-text {
+  font-size: .88rem;
+  color: rgba(255,255,255,.7);
+  line-height: 1.4;
+  padding-top: 3px;
+}
+.nubi-closing {
+  background: rgba(13,71,161,.25);
+  border: 1px solid rgba(66,165,245,.18);
+  border-radius: 11px;
+  padding: .8rem 1rem;
+  font-size: .85rem;
+  color: rgba(255,255,255,.7);
+  margin-top: .5rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+/* Input de problema */
+.nubi-textarea {
+  width: 100%;
+  background: rgba(5,14,30,.5);
+  border: 1px solid rgba(66,165,245,.18);
+  border-radius: 11px;
+  color: #fff;
+  font-family: var(--font, inherit);
+  font-size: .88rem;
+  padding: .75rem 1rem;
+  resize: none;
+  height: 90px;
+  margin-bottom: .75rem;
+  transition: border-color .2s;
+}
+.nubi-textarea:focus {
+  outline: none;
+  border-color: rgba(66,165,245,.4);
+}
+.nubi-textarea::placeholder { color: rgba(255,255,255,.25); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/otpauth@9.3.6/dist/otpauth.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -3348,6 +3629,204 @@ function caLogout() {
   document.getElementById('ca-pass').value = '';
   location.hash = '#/';
 }
+</script>
+
+<!-- ══════════════════════════════════════════════════════
+     NUBI — Botón flotante de soporte
+     ══════════════════════════════════════════════════════ -->
+<button class="nubi-fab" onclick="nubiOpen()" aria-label="Abrir soporte Nubi" id="nubi-fab">
+  <img src="claunet-nube.png" alt="Nubi">
+  <span class="nubi-fab-label">¿Necesitas ayuda?</span>
+</button>
+
+<!-- Overlay + Modal -->
+<div class="nubi-overlay" id="nubi-overlay" role="dialog" aria-modal="true" aria-label="Soporte Nubi">
+  <div class="nubi-modal" id="nubi-modal">
+
+    <!-- VISTA: inicio -->
+    <div class="nubi-view active" id="nubi-view-main">
+      <div class="nubi-modal-head">
+        <img src="claunet-nube.png" alt="Nubi" class="nubi-avatar">
+        <div>
+          <div class="nubi-title">¡Hola! Soy Nubi ☁️</div>
+          <div class="nubi-subtitle" id="nubi-ctx-msg">¿Necesitas ayuda con tu Amigo Secreto? Estoy aquí para ayudarte.</div>
+        </div>
+      </div>
+
+      <button class="nubi-btn nubi-btn-wa" onclick="nubiWhatsApp('general')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L.057 23.986l6.284-1.648A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.001-1.372l-.359-.214-3.731.978 1-3.636-.234-.374A9.775 9.775 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Contactar soporte
+      </button>
+
+      <button class="nubi-btn" onclick="nubiView('how')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        ¿Cómo funciona Amigo Secreto?
+      </button>
+
+      <button class="nubi-btn" onclick="nubiView('problem')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Tengo un problema
+      </button>
+
+      <button class="nubi-btn nubi-btn-close" onclick="nubiClose()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cerrar
+      </button>
+    </div>
+
+    <!-- VISTA: cómo funciona -->
+    <div class="nubi-view" id="nubi-view-how">
+      <button class="nubi-back" onclick="nubiView('main')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver
+      </button>
+      <div class="nubi-modal-head">
+        <img src="claunet-nube.png" alt="Nubi" class="nubi-avatar">
+        <div>
+          <div class="nubi-title">¿Cómo funciona?</div>
+          <div class="nubi-subtitle">Es muy sencillo, te explico:</div>
+        </div>
+      </div>
+      <div class="nubi-how-step">
+        <div class="nubi-how-num">1</div>
+        <div class="nubi-how-text">El <strong>organizador</strong> crea un evento, agrega a todos los participantes y puede definir restricciones.</div>
+      </div>
+      <div class="nubi-how-step">
+        <div class="nubi-how-num">2</div>
+        <div class="nubi-how-text">El sistema genera un <strong>link del evento</strong> y un <strong>PIN único</strong> para cada participante.</div>
+      </div>
+      <div class="nubi-how-step">
+        <div class="nubi-how-num">3</div>
+        <div class="nubi-how-text">El organizador comparte el link con todos y envía cada PIN <strong>en privado</strong> a su dueño.</div>
+      </div>
+      <div class="nubi-how-step">
+        <div class="nubi-how-num">4</div>
+        <div class="nubi-how-text">Cuando estén listos, el organizador <strong>realiza el sorteo</strong> desde su panel.</div>
+      </div>
+      <div class="nubi-how-step">
+        <div class="nubi-how-num">5</div>
+        <div class="nubi-how-text">Cada participante entra con el link, selecciona su nombre, ingresa su PIN y <strong>descubre a quién le toca regalar</strong>.</div>
+      </div>
+      <div class="nubi-closing">¡Así de fácil! 🎁 Ahora solo queda preparar ese regalo.</div>
+      <button class="nubi-btn nubi-btn-close" onclick="nubiClose()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cerrar
+      </button>
+    </div>
+
+    <!-- VISTA: reportar problema -->
+    <div class="nubi-view" id="nubi-view-problem">
+      <button class="nubi-back" onclick="nubiView('main')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver
+      </button>
+      <div class="nubi-modal-head">
+        <img src="claunet-nube.png" alt="Nubi" class="nubi-avatar">
+        <div>
+          <div class="nubi-title">Vamos a solucionarlo</div>
+          <div class="nubi-subtitle">Cuéntanos brevemente qué pasó y te ayudamos por WhatsApp.</div>
+        </div>
+      </div>
+      <textarea class="nubi-textarea" id="nubi-problem-text" placeholder="Ej: No puedo ingresar con mi PIN, el sorteo no aparece…" maxlength="300"></textarea>
+      <button class="nubi-btn nubi-btn-wa" onclick="nubiWhatsApp('problem')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L.057 23.986l6.284-1.648A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.001-1.372l-.359-.214-3.731.978 1-3.636-.234-.374A9.775 9.775 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Enviar por WhatsApp
+      </button>
+      <button class="nubi-btn nubi-btn-close" onclick="nubiClose()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cerrar
+      </button>
+    </div>
+
+  </div><!-- /nubi-modal -->
+</div><!-- /nubi-overlay -->
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   NUBI — Lógica de soporte
+   ══════════════════════════════════════════════════════════ */
+
+// ── Configuración de WhatsApp ──────────────────────────────
+// Reemplaza XXXXXXXXXX por el número ClauNet sin +, ej: 56912345678
+const NUBI_WA_NUMBER = 'XXXXXXXXXX';
+
+// ── Mensajes contextuales según pantalla activa ────────────
+const NUBI_CTX = {
+  'page-home':          '¡Hola! ¿Vamos a organizar un Amigo Secreto?',
+  'page-create':        '¿Necesitas ayuda para organizar tu intercambio?',
+  'page-created':       '¿Necesitas ayuda para compartir el link o los PINs?',
+  'page-event':         '¿No encuentras tu nombre? Te puedo ayudar.',
+  'page-admin':         '¿Problemas para ingresar o realizar el sorteo? Cuéntame.',
+  'page-manual':        '¿Tienes alguna duda sobre cómo funciona?',
+  'page-claunet-admin': '¿Necesitas ayuda con el panel de administración?',
+  '_default':           '¿Necesitas ayuda con tu Amigo Secreto? Estoy aquí para ayudarte.',
+};
+
+// ── Nombre legible de cada pantalla (para el mensaje WA) ───
+const NUBI_PAGE_NAMES = {
+  'page-home':          'inicio',
+  'page-create':        'creación de evento',
+  'page-created':       'confirmación de evento',
+  'page-event':         'selección de participante',
+  'page-admin':         'panel del organizador',
+  'page-manual':        'manual de ayuda',
+  'page-claunet-admin': 'panel ClauNet',
+};
+
+function nubiActivePage() {
+  const pages = ['page-home','page-create','page-created','page-admin','page-event','page-manual','page-claunet-admin'];
+  for (const p of pages) {
+    const el = document.getElementById(p);
+    if (el && el.classList.contains('active')) return p;
+  }
+  return '_default';
+}
+
+function nubiOpen() {
+  const page  = nubiActivePage();
+  const msg   = NUBI_CTX[page] || NUBI_CTX['_default'];
+  document.getElementById('nubi-ctx-msg').textContent = msg;
+  nubiView('main');
+  document.getElementById('nubi-overlay').classList.add('open');
+  document.getElementById('nubi-problem-text').value = '';
+}
+
+function nubiClose() {
+  document.getElementById('nubi-overlay').classList.remove('open');
+}
+
+function nubiView(view) {
+  document.querySelectorAll('.nubi-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('nubi-view-' + view).classList.add('active');
+}
+
+function nubiWhatsApp(type) {
+  if (NUBI_WA_NUMBER === 'XXXXXXXXXX') {
+    alert('El número de WhatsApp de soporte aún no está configurado. Por favor contacta a ClauNet directamente.');
+    return;
+  }
+  const page     = nubiActivePage();
+  const pageName = NUBI_PAGE_NAMES[page] || '';
+  const ctx      = pageName ? ` (pantalla: ${pageName})` : '';
+  let msg;
+  if (type === 'problem') {
+    const userText = (document.getElementById('nubi-problem-text').value || '').trim();
+    msg = `Hola, estoy utilizando Amigo Secreto de ClauNet y tengo un problema${ctx}.`;
+    if (userText) msg += `\n\n${userText}`;
+  } else {
+    msg = `Hola Nubi, necesito ayuda con Amigo Secreto de ClauNet${ctx}.`;
+  }
+  const url = `https://wa.me/${NUBI_WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+// Cerrar con Escape o clic en el overlay (fuera del modal)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') nubiClose();
+});
+document.getElementById('nubi-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('nubi-overlay')) nubiClose();
+});
 </script>
 </body>
 </html>
