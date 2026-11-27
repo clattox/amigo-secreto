@@ -125,10 +125,38 @@ function bytesToHex(bytes: Uint8Array): string {
 
 /** Derangement de Fisher-Yates: sorteo sin auto-asignación */
 export function generateDerangement(n: number): number[] {
+  return generateDerangementWithExclusions(n, []);
+}
+
+/**
+ * Derangement respetando exclusiones.
+ * @param n - cantidad de participantes
+ * @param exclusions - pares [a, b] de índices que NO pueden quedar juntos (ni a→b ni b→a)
+ */
+export function generateDerangementWithExclusions(
+  n: number,
+  exclusions: [number, number][]
+): number[] {
   if (n < 2) throw new Error("Mínimo 2 participantes");
 
-  let perm: number[];
-  let isDerangement: boolean;
+  // Construir set de pares inválidos (bidireccional)
+  const forbidden = new Set<string>();
+  for (const [a, b] of exclusions) {
+    forbidden.add(`${a}-${b}`);
+    forbidden.add(`${b}-${a}`);
+  }
+
+  const isValid = (perm: number[]) => {
+    // No auto-asignación
+    if (!perm.every((v, i) => v !== i)) return false;
+    // No pares excluidos
+    for (let i = 0; i < perm.length; i++) {
+      if (forbidden.has(`${i}-${perm[i]}`)) return false;
+    }
+    return true;
+  };
+
+  let perm: number[] = [];
   let attempts = 0;
 
   do {
@@ -140,10 +168,14 @@ export function generateDerangement(n: number): number[] {
       const j = arr[0] % (i + 1);
       [perm[i], perm[j]] = [perm[j], perm[i]];
     }
-    isDerangement = perm.every((v, i) => v !== i);
     attempts++;
-    if (attempts > 1000) throw new Error("No se pudo generar sorteo válido");
-  } while (!isDerangement);
+    if (attempts > 10_000) {
+      throw new Error(
+        "No se pudo generar un sorteo válido con las restricciones actuales. " +
+        "Verifica que las exclusiones no sean demasiadas para el grupo."
+      );
+    }
+  } while (!isValid(perm));
 
   return perm;
 }

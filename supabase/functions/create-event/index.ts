@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { eventName, deliveryDate, maxAmount, participants } = await req.json();
+    const { eventName, deliveryDate, maxAmount, participants, exclusions } = await req.json();
 
     // ── Validaciones ────────────────────────────────────
     if (!eventName?.trim()) {
@@ -99,6 +99,35 @@ Deno.serve(async (req: Request) => {
     );
 
     if (partErr) throw partErr;
+
+    // ── Guardar exclusiones ─────────────────────────────
+    // exclusions: array de [nameA, nameB] con nombres de participantes
+    if (Array.isArray(exclusions) && exclusions.length > 0) {
+      // Obtener IDs de participantes recién insertados
+      const { data: insertedParts } = await supabase
+        .from("participants")
+        .select("id, name")
+        .eq("event_id", event.id);
+
+      const nameToId = new Map(insertedParts?.map((p) => [p.name, p.id]) ?? []);
+
+      const exclusionRows = [];
+      for (const [nameA, nameB] of exclusions) {
+        const idA = nameToId.get(nameA);
+        const idB = nameToId.get(nameB);
+        if (idA && idB) {
+          exclusionRows.push({
+            event_id: event.id,
+            participant_a_id: idA,
+            participant_b_id: idB,
+          });
+        }
+      }
+
+      if (exclusionRows.length > 0) {
+        await supabase.from("exclusions").insert(exclusionRows);
+      }
+    }
 
     // ── Respuesta: PINs en texto claro UNA SOLA VEZ ────
     // Después de esta respuesta, los PINs no se pueden recuperar.

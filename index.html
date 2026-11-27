@@ -397,6 +397,22 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
         <button class="btn-add-participant" onclick="addParticipantRow()" id="btn-add">
           <span style="font-size:1.2rem">+</span> Agregar participante
         </button>
+
+        <!-- Sección exclusiones -->
+        <div style="margin-top:20px;border-top:1px solid #eee;padding-top:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div>
+              <div style="font-weight:700;font-size:.95rem">🚫 Restricciones <span style="font-weight:400;font-size:.82rem;color:#888">(opcional)</span></div>
+              <div style="font-size:.8rem;color:#888;margin-top:2px">Pares que NO pueden quedar juntos</div>
+            </div>
+            <button class="btn-add-participant" onclick="addExclusionRow()" id="btn-add-excl" style="font-size:.85rem;padding:7px 12px">
+              <span style="font-size:1rem">+</span> Restricción
+            </button>
+          </div>
+          <div id="exclusions-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div id="exclusions-error" class="alert alert-err mt-2" style="display:none"></div>
+        </div>
+
         <div id="participants-error" class="alert alert-err mt-2" style="display:none"></div>
         <div style="display:flex;gap:10px;margin-top:16px">
           <button class="btn btn-ghost" onclick="backToStep1()" style="width:auto;padding:14px 20px">←</button>
@@ -921,15 +937,84 @@ function removeParticipantRow(btn) {
   updateParticipantNumbers();
 }
 
+function getParticipantNames() {
+  return Array.from(document.querySelectorAll('#participants-list .participant-row input'))
+    .map(inp => inp.value.trim()).filter(Boolean);
+}
+
+// ── Exclusiones ───────────────────────────────────────────
+function getExclusionSelects() {
+  return document.querySelectorAll('#exclusions-list .exclusion-row');
+}
+
+function buildNameOptions(selected = '') {
+  const names = getParticipantNames();
+  return names.map(n =>
+    `<option value="${n.replace(/"/g, '&quot;')}" ${n === selected ? 'selected' : ''}>${n}</option>`
+  ).join('');
+}
+
+function refreshAllExclusionSelects() {
+  document.querySelectorAll('#exclusions-list .exclusion-row').forEach(row => {
+    const selA = row.querySelector('.excl-a');
+    const selB = row.querySelector('.excl-b');
+    const valA = selA.value;
+    const valB = selB.value;
+    selA.innerHTML = buildNameOptions(valA);
+    selB.innerHTML = buildNameOptions(valB);
+  });
+}
+
+function addExclusionRow() {
+  const names = getParticipantNames();
+  if (names.length < 2) {
+    document.getElementById('exclusions-error').textContent = 'Agrega al menos 2 participantes primero';
+    document.getElementById('exclusions-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('exclusions-error').style.display = 'none';
+
+  const list = document.getElementById('exclusions-list');
+  const row = document.createElement('div');
+  row.className = 'exclusion-row';
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;background:#fff8f8;border:1px solid #fcc;border-radius:8px;padding:8px 10px';
+  row.innerHTML = `
+    <span style="font-size:.85rem;color:#c00;white-space:nowrap">🚫</span>
+    <select class="excl-a" style="flex:1;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:.88rem;background:#fff">
+      ${buildNameOptions()}
+    </select>
+    <span style="font-size:.8rem;color:#888;white-space:nowrap">no regala a</span>
+    <select class="excl-b" style="flex:1;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:.88rem;background:#fff">
+      ${buildNameOptions()}
+    </select>
+    <button onclick="this.closest('.exclusion-row').remove()" title="Quitar restricción"
+      style="background:none;border:none;cursor:pointer;color:#c00;font-size:1.2rem;line-height:1;padding:0 2px">×</button>`;
+  list.appendChild(row);
+
+  // Si solo hay 2 participantes, seleccionar el segundo por defecto en excl-b
+  const selects = row.querySelectorAll('select');
+  if (names.length >= 2) {
+    selects[0].value = names[0];
+    selects[1].value = names[1];
+  }
+}
+
+function getExclusionPairs() {
+  const pairs = [];
+  document.querySelectorAll('#exclusions-list .exclusion-row').forEach(row => {
+    const a = row.querySelector('.excl-a').value;
+    const b = row.querySelector('.excl-b').value;
+    if (a && b) pairs.push([a, b]);
+  });
+  return pairs;
+}
+
+// Actualizar selects de exclusiones cuando cambian los participantes
 function updateParticipantNumbers() {
   document.querySelectorAll('#participants-list .participant-row').forEach((row, i) => {
     row.querySelector('span').textContent = (i + 1) + '.';
   });
-}
-
-function getParticipantNames() {
-  return Array.from(document.querySelectorAll('#participants-list .participant-row input'))
-    .map(inp => inp.value.trim()).filter(Boolean);
+  refreshAllExclusionSelects();
 }
 
 function goToStep3() {
@@ -966,6 +1051,31 @@ function goToStep3() {
   });
   summary += '</div>';
 
+  // Resumen de exclusiones
+  const exclusionPairs = getExclusionPairs();
+  // Validar exclusiones
+  const exclErr = document.getElementById('exclusions-error');
+  for (const [a, b] of exclusionPairs) {
+    if (a === b) {
+      exclErr.textContent = `Una restricción tiene la misma persona en ambos lados: "${a}"`;
+      exclErr.style.display = 'block';
+      return;
+    }
+  }
+  exclErr.style.display = 'none';
+
+  if (exclusionPairs.length > 0) {
+    summary += `<div style="margin-top:14px">
+      <div style="font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+        Restricciones (${exclusionPairs.length})
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">`;
+    exclusionPairs.forEach(([a, b]) => {
+      summary += `<div style="font-size:.85rem;color:#c00;background:#fff8f8;border:1px solid #fcc;border-radius:6px;padding:4px 10px">🚫 ${a} ↔ ${b}</div>`;
+    });
+    summary += '</div></div>';
+  }
+
   document.getElementById('confirm-summary').innerHTML = summary;
   document.getElementById('step-participants').style.display = 'none';
   document.getElementById('step-confirm').style.display = 'block';
@@ -983,11 +1093,13 @@ async function crearEvento() {
   btn.innerHTML = '<div class="spinner"></div> Creando evento...';
 
   const names = getParticipantNames();
+  const exclusionPairs = getExclusionPairs();
   const payload = {
     eventName: document.getElementById('event-name').value.trim(),
     deliveryDate: document.getElementById('event-date').value || null,
     maxAmount: document.getElementById('event-amount').value || null,
     participants: names.map(n => ({ name: n })),
+    exclusions: exclusionPairs,
   };
 
   try {

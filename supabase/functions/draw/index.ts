@@ -6,7 +6,7 @@ import {
   sha256,
   deriveAesKey,
   aesEncrypt,
-  generateDerangement,
+  generateDerangementWithExclusions,
 } from "../_shared/crypto.ts";
 
 Deno.serve(async (req: Request) => {
@@ -90,8 +90,30 @@ Deno.serve(async (req: Request) => {
       return err(400, "Se necesitan al menos 3 participantes para sortear");
     }
 
-    // ── Generar derangement (sorteo sin auto-asignación) ─
-    const derangement = generateDerangement(participants.length);
+    // ── Cargar exclusiones ──────────────────────────────
+    const { data: exclusionsRaw } = await supabase
+      .from("exclusions")
+      .select("participant_a_id, participant_b_id")
+      .eq("event_id", event.id);
+
+    // Convertir IDs de participantes a índices
+    const idToIndex = new Map(participants.map((p, i) => [p.id, i]));
+    const exclusionPairs: [number, number][] = [];
+    for (const ex of exclusionsRaw ?? []) {
+      const a = idToIndex.get(ex.participant_a_id);
+      const b = idToIndex.get(ex.participant_b_id);
+      if (a !== undefined && b !== undefined) {
+        exclusionPairs.push([a, b]);
+      }
+    }
+
+    // ── Generar derangement respetando exclusiones ──────
+    let derangement: number[];
+    try {
+      derangement = generateDerangementWithExclusions(participants.length, exclusionPairs);
+    } catch (_e) {
+      return err(409, "No se pudo generar el sorteo con las restricciones actuales. Hay demasiadas exclusiones para el grupo.");
+    }
     // derangement[i] = índice del amigo secreto de participants[i]
 
     const serverSecret = Deno.env.get("ASSIGNMENT_HMAC_SECRET");
