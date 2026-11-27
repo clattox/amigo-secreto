@@ -276,7 +276,12 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 
 /* ── HOME ───────────────────────────────────────────── */
 /* Hero title */
-.home-hero{text-align:center;padding:36px 0 4px;width:100%}
+.home-hero{text-align:center;padding:28px 0 4px;width:100%}
+.home-hero-logo{
+  width:120px;height:auto;
+  animation:float 4s ease-in-out infinite;
+  filter:drop-shadow(0 6px 20px rgba(0,100,255,.25));
+  margin-bottom:2px;display:block;margin-left:auto;margin-right:auto}
 .home-hero-title{
   font-family:var(--font-title);font-size:3rem;font-weight:800;
   color:var(--gold2);line-height:1.05;letter-spacing:-.5px;
@@ -284,7 +289,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
   margin-bottom:10px}
 .home-hero-sub{font-size:.9rem;color:var(--muted);letter-spacing:.2px;margin-bottom:0}
 .home-hero-brand{
-  display:inline-flex;align-items:center;gap:5px;margin-top:14px;
+  display:inline-flex;align-items:center;gap:5px;margin-top:4px;margin-bottom:12px;
   font-size:.7rem;color:rgba(255,255,255,.22);letter-spacing:.8px;text-transform:uppercase}
 .home-hero-brand a{color:rgba(255,255,255,.28);text-decoration:none;transition:color var(--ease)}
 .home-hero-brand a:hover{color:var(--gold)}
@@ -498,11 +503,11 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
   <div class="page active" id="page-home">
 
     <div class="home-hero">
-      <div class="site-logo" style="font-size:3.4rem;line-height:1;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 4px 20px rgba(212,175,55,.4));display:block;margin-bottom:14px">🎁</div>
+      <img src="claunet-nube.png" alt="ClauNet" class="home-hero-logo">
+      <div class="home-hero-brand">por <a href="https://claunet.cl" target="_blank">ClauNet</a></div>
       <div class="home-hero-title">Amigo Secreto</div>
       <div class="home-hero-line"></div>
-      <div class="home-hero-sub" style="margin-top:14px">Sorteo navideño sin cuentas, sin complicaciones</div>
-      <div class="home-hero-brand">por <a href="https://claunet.cl" target="_blank">ClauNet</a></div>
+      <div class="home-hero-sub">Sorteo navideño sin cuentas, sin complicaciones</div>
     </div>
 
     <div class="home-cards">
