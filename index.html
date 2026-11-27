@@ -884,6 +884,10 @@ function goToStep2() {
       return;
     }
   }
+  const amountVal = parseInt(document.getElementById('event-amount').value, 10);
+  if (amountVal && amountVal < 1500) {
+    alert(`$${amountVal.toLocaleString('es-CL')} de tope... ¿no será mucho? 😄`);
+  }
   document.getElementById('step-event-data').style.display = 'none';
   document.getElementById('step-participants').style.display = 'block';
   if (document.getElementById('participants-list').children.length === 0) {
