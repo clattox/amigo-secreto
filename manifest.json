@@ -1,0 +1,14 @@
+{
+  "name": "Amigo Secreto · ClauNet",
+  "short_name": "Amigo Secreto",
+  "description": "Organiza tu Amigo Secreto fácil y seguro. Gratis, sin cuentas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050e1e",
+  "theme_color": "#050e1e",
+  "icons": [
+    { "src": "icon-96.png",  "sizes": "96x96",   "type": "image/png" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
