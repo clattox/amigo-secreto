@@ -32,9 +32,15 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // ── Obtener participante con su evento ──────────────
-    // Intentar con columnas nuevas; si no existen aún, fallback sin ellas
-    let participant: Record<string, unknown> | null = null;
+    // ── Obtener participante ────────────────────────────
+    // Intentar con columnas nuevas; fallback si la migración SQL aún no corrió
+    type Participant = {
+      id: string; event_id: string; name: string;
+      pin_hash: string; pin_salt: string;
+      assignment_encrypted: string; assignment_iv: string; assignment_salt: string;
+      pin_changed: boolean; revealed: boolean;
+    };
+    let participant: Participant | null = null;
     {
       const { data, error } = await supabase
         .from("participants")
@@ -42,7 +48,7 @@ Deno.serve(async (req: Request) => {
         .eq("id", participantId)
         .maybeSingle();
 
-      if (error && error.message?.includes("pin_changed")) {
+      if (error && (error.message?.includes("pin_changed") || error.message?.includes("column"))) {
         // Columnas de migración aún no aplicadas — query sin ellas
         const { data: data2, error: err2 } = await supabase
           .from("participants")
@@ -50,11 +56,11 @@ Deno.serve(async (req: Request) => {
           .eq("id", participantId)
           .maybeSingle();
         if (err2 || !data2) return err(404, "Participante no encontrado");
-        participant = { ...data2, pin_changed: true, revealed: false }; // tratar como ya migrado
+        participant = { ...(data2 as Omit<Participant, "pin_changed"|"revealed">), pin_changed: true, revealed: false };
       } else if (error || !data) {
         return err(404, "Participante no encontrado");
       } else {
-        participant = data;
+        participant = data as Participant;
       }
     }
 
