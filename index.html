@@ -275,25 +275,79 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .spinner-dark{border-color:rgba(0,0,0,.12);border-top-color:var(--green)}
 
 /* ── HOME ───────────────────────────────────────────── */
-.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+/* Hero title */
+.home-hero{text-align:center;padding:36px 0 4px;width:100%}
+.home-hero-title{
+  font-family:var(--font-title);font-size:3rem;font-weight:800;
+  color:var(--gold2);line-height:1.05;letter-spacing:-.5px;
+  text-shadow:0 2px 32px rgba(212,175,55,.5),0 0 80px rgba(212,175,55,.18);
+  margin-bottom:10px}
+.home-hero-sub{font-size:.9rem;color:var(--muted);letter-spacing:.2px;margin-bottom:0}
+.home-hero-brand{
+  display:inline-flex;align-items:center;gap:5px;margin-top:14px;
+  font-size:.7rem;color:rgba(255,255,255,.22);letter-spacing:.8px;text-transform:uppercase}
+.home-hero-brand a{color:rgba(255,255,255,.28);text-decoration:none;transition:color var(--ease)}
+.home-hero-brand a:hover{color:var(--gold)}
+/* Línea decorativa dorada bajo el título */
+.home-hero-line{
+  width:48px;height:2px;margin:14px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  border-radius:2px;opacity:.6}
+
+/* Cards verticales tipo "puerta" */
+.home-cards{display:flex;flex-direction:column;gap:12px;width:100%}
 .home-card{
-  background:rgba(255,255,255,.06);
-  border:1.5px solid rgba(255,255,255,.1);
-  border-radius:18px;padding:24px 16px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.055);
+  border:1.5px solid rgba(255,255,255,.09);
+  border-radius:20px;padding:22px 24px;cursor:pointer;
   transition:all var(--ease);text-decoration:none;color:var(--cream);
-  position:relative;overflow:hidden;backdrop-filter:blur(2px)}
+  position:relative;overflow:hidden;backdrop-filter:blur(3px);
+  display:flex;align-items:center;gap:20px;text-align:left}
 .home-card::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);
+  background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,transparent 55%);
   pointer-events:none}
+/* Shimmer al hover */
+.home-card::after{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  transition:left .55s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.home-card:hover::after{left:150%}
 .home-card:hover{
-  background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.22);
-  transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.3)}
-.home-card:active{transform:translateY(-1px)}
-.home-card-icon{font-size:2.6rem;margin-bottom:12px;
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));display:block}
-.home-card-title{font-size:.98rem;font-weight:800;margin-bottom:5px;letter-spacing:-.1px}
-.home-card-desc{font-size:.76rem;opacity:.55;line-height:1.5}
+  background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);
+  transform:translateY(-3px) scale(1.005);
+  box-shadow:0 14px 36px rgba(0,0,0,.35)}
+.home-card:active{transform:translateY(0) scale(1);transition-duration:.08s}
+.home-card-icon{
+  font-size:2.4rem;flex-shrink:0;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.35));
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.home-card:hover .home-card-icon{transform:scale(1.12) rotate(-4deg)}
+.home-card-body{flex:1;min-width:0}
+.home-card-title{font-size:1.05rem;font-weight:800;margin-bottom:3px;letter-spacing:-.1px;line-height:1.2}
+.home-card-desc{font-size:.8rem;opacity:.5;line-height:1.5}
+.home-card-arrow{
+  flex-shrink:0;font-size:1.1rem;opacity:.3;
+  transition:opacity var(--ease),transform var(--ease)}
+.home-card:hover .home-card-arrow{opacity:.7;transform:translateX(4px)}
+
+/* Card de código (join-form) rediseñada */
+.join-card{
+  background:rgba(255,255,255,.055);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:22px 22px 24px;width:100%;
+  backdrop-filter:blur(3px)}
+.join-card-label{
+  font-size:.72rem;font-weight:800;color:rgba(255,255,255,.4);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+.join-card .field input{
+  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);
+  color:var(--cream);border-radius:14px;font-size:1.3rem;
+  letter-spacing:4px;text-align:center;font-weight:800;padding:14px}
+.join-card .field input::placeholder{color:rgba(255,255,255,.2);letter-spacing:2px;font-size:1rem}
+.join-card .field input:focus{
+  border-color:rgba(212,175,55,.5);background:rgba(255,255,255,.12);
+  box-shadow:0 0 0 4px rgba(212,175,55,.12);color:#fff}
+.join-card .field label{color:rgba(255,255,255,.5)}
 
 /* ── BRANDING ────────────────────────────────────────── */
 .claunet-badge{font-size:.72rem;color:rgba(255,255,255,.25);text-align:center;
@@ -442,40 +496,43 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 
   <!-- ══ HOME ══════════════════════════════════════════ -->
   <div class="page active" id="page-home">
-    <div class="site-header">
-      <div class="site-logo">🎁</div>
-      <div class="site-title">Amigo Secreto</div>
-      <div class="site-sub">Organiza tu sorteo navideño en 2 minutos</div>
-      <div class="site-brand">por <a href="https://claunet.cl" target="_blank">ClauNet</a></div>
+
+    <div class="home-hero">
+      <div class="site-logo" style="font-size:3.4rem;line-height:1;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 4px 20px rgba(212,175,55,.4));display:block;margin-bottom:14px">🎁</div>
+      <div class="home-hero-title">Amigo Secreto</div>
+      <div class="home-hero-line"></div>
+      <div class="home-hero-sub" style="margin-top:14px">Sorteo navideño sin cuentas, sin complicaciones</div>
+      <div class="home-hero-brand">por <a href="https://claunet.cl" target="_blank">ClauNet</a></div>
     </div>
 
     <div class="home-cards">
       <a class="home-card" onclick="goTo('page-create')">
         <div class="home-card-icon">🎄</div>
-        <div class="home-card-title">Crear evento</div>
-        <div class="home-card-desc">Organiza tu Amigo Secreto desde cero</div>
+        <div class="home-card-body">
+          <div class="home-card-title">Crear evento</div>
+          <div class="home-card-desc">Organiza tu Amigo Secreto desde cero</div>
+        </div>
+        <div class="home-card-arrow">›</div>
       </a>
       <a class="home-card" onclick="showJoinForm()">
         <div class="home-card-icon">🔑</div>
-        <div class="home-card-title">Tengo código</div>
-        <div class="home-card-desc">Ya me mandaron el link del evento</div>
+        <div class="home-card-body">
+          <div class="home-card-title">Tengo un código</div>
+          <div class="home-card-desc">Ya me llegó el link del evento</div>
+        </div>
+        <div class="home-card-arrow">›</div>
       </a>
     </div>
 
-    <div class="card" id="join-form" style="display:none">
-      <div class="card-body">
-        <div class="field">
-          <label>Código del evento</label>
-          <input type="text" id="join-code" placeholder="Ej: XMAS26" maxlength="8"
-            style="text-transform:uppercase;letter-spacing:3px;font-size:1.2rem;font-weight:700;text-align:center">
-        </div>
-        <button class="btn btn-primary" onclick="joinEvent()">Ir al evento →</button>
+    <div class="join-card" id="join-form" style="display:none">
+      <div class="join-card-label">Ingresa el código</div>
+      <div class="field" style="margin-bottom:14px">
+        <input type="text" id="join-code" placeholder="Ej: XMAS26" maxlength="8"
+          style="text-transform:uppercase">
       </div>
+      <button class="btn btn-gold" onclick="joinEvent()">Ir al evento →</button>
     </div>
 
-    <div class="claunet-badge">
-      Herramienta gratuita por <a href="https://claunet.cl" target="_blank">ClauNet</a>
-    </div>
   </div>
 
   <!-- ══ CREAR EVENTO ════════════════════════════════════ -->
