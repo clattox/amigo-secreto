@@ -35,7 +35,7 @@ serve(async (req) => {
     // Acciones autenticadas (verifican admin PIN internamente)
     if (action === 'list_participants' || action === 'reset_participant_pin') {
       const { participantId } = body
-      if (!participantId) return new Response(
+      if (action === 'reset_participant_pin' && !participantId) return new Response(
         JSON.stringify({ ok: false, error: 'Falta participantId' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -80,12 +80,6 @@ serve(async (req) => {
       }
 
       // ── reset_participant_pin ──────────────────────────
-      const { participantId } = body
-      if (!participantId) return new Response(
-        JSON.stringify({ ok: false, error: 'Falta participantId' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-
       // Generar nuevo PIN y hashearlo
       const newPin = generatePin()
       const newSalt = generateSalt()
