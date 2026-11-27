@@ -15,7 +15,7 @@
   /* Paleta principal */
   --bg:#050e1e;
   --bg2:#0b1f10;
-  --bg3:#0f2814;
+
   --green:#1e6b30;
   --green2:#27a349;
   --green-dark:#0a3d14;
@@ -56,14 +56,14 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 #bg{position:fixed;inset:0;z-index:0;pointer-events:none;
   transition:background 0.6s ease;
   background:
-    radial-gradient(ellipse at 20% 0%,#1a4a20 0%,transparent 50%),
-    radial-gradient(ellipse at 80% 100%,#0d2f10 0%,transparent 55%),
-    radial-gradient(ellipse at 50% 50%,#0a1e0d 0%,#06140a 100%)}
+    radial-gradient(ellipse at 25% 0%,#0d2a5a 0%,transparent 55%),
+    radial-gradient(ellipse at 75% 100%,#082040 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 50%,#071428 0%,#050e1e 100%)}
 #bg::after{content:'';position:absolute;inset:0;
   background:
-    radial-gradient(circle at 88% 12%,rgba(212,175,55,.06) 0%,transparent 40%),
-    radial-gradient(circle at 8% 88%,rgba(192,57,43,.05) 0%,transparent 40%),
-    radial-gradient(circle at 50% 50%,rgba(30,136,229,.03) 0%,transparent 70%)}
+    radial-gradient(circle at 15% 20%,rgba(66,165,245,.12) 0%,transparent 45%),
+    radial-gradient(circle at 85% 70%,rgba(30,136,229,.08) 0%,transparent 45%),
+    radial-gradient(circle at 50% 50%,rgba(100,181,246,.04) 0%,transparent 70%)}
 
 /* Estrellas */
 #stars{position:absolute;inset:0}
@@ -691,7 +691,7 @@ body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s 
   box-shadow:0 0 0 4px rgba(212,175,55,.1)}
 .glass-field input::placeholder{color:rgba(255,255,255,.2)}
 .glass-field .hint{font-size:.75rem;color:rgba(255,255,255,.3);margin-top:1px;line-height:1.4}
-.glass-field select option{background:#0f2814;color:#fff}
+.glass-field select option{background:#071428;color:#fff}
 
 /* Participant rows glass */
 .glass-participants{display:flex;flex-direction:column;gap:7px}
@@ -735,7 +735,7 @@ body.manual-active #lights{opacity:0;pointer-events:none;transition:opacity .4s 
   color:#fff;font-family:var(--font);outline:none;
   transition:border-color var(--ease)}
 .glass-excl-row select:focus{border-color:rgba(192,57,43,.5)}
-.glass-excl-row select option{background:#0f2814;color:#fff}
+.glass-excl-row select option{background:#071428;color:#fff}
 .glass-excl-sep{font-size:.75rem;color:rgba(255,255,255,.35);font-weight:700;flex-shrink:0}
 .glass-btn-remove-excl{
   background:none;border:none;color:rgba(192,57,43,.4);cursor:pointer;
